@@ -1,0 +1,35 @@
+services:
+  edge-router:
+    build:
+      context: .
+      dockerfile: edge-router/Dockerfile
+    image: img-edge-router:1.0.0
+    container_name: cont-edge-router
+    env_file:
+      - .env
+    depends_on:
+      repo-service:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    networks:
+      - edge
+
+  repo-service:
+    build:
+      context: .
+      dockerfile: repo-service/Dockerfile
+    image: img-repo-service:1.0.0
+    container_name: cont-repo-service
+    volumes:
+      - ./volumes/repo:/repo:ro
+    restart: unless-stopped
+    networks:
+      - edge
+
+networks:
+  edge:
+    name: servicoop-edge-net
+    external: true

@@ -160,6 +160,16 @@
                 </div>
             </div>
         </section>
+        <section class="system-section" data-system="moto-tester" aria-labelledby="moto-tester-title">
+            <h2 id="moto-tester-title">moto-tester</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Trasvase Tester</h3>
+                    <p>Web de prueba y diagnostico Modbus/TCP para bombas de trasvase</p>
+                    <button class="secondary" type="button" onclick="showMotoTesterForm()">Abrir moto-tester</button>
+                </div>
+            </div>
+        </section>
     </div>
     <div id="protected-login" class="card hidden">
         <h2>Autenticacion protegida</h2>
@@ -200,6 +210,19 @@
             <button class="ghost" type="button" onclick="backToChoiceFromChatcheto()">Volver al inicio</button>
         </form>
     </div>
+    <div id="moto-tester-login" class="card hidden">
+        <h2>Acceso moto-tester</h2>
+        <p>Se requiere confirmar credenciales protegidas antes de abrir el tester.</p>
+        <form id="moto-tester-form">
+            <label for="moto-tester-user">Usuario</label>
+            <input id="moto-tester-user" name="user" type="text" autocomplete="username" required>
+            <label for="moto-tester-pass">Contrasena</label>
+            <input id="moto-tester-pass" name="pass" type="password" autocomplete="current-password" required>
+            <div class="error" id="moto-tester-error"></div>
+            <button class="secondary" type="submit">Abrir moto-tester</button>
+            <button class="ghost" type="button" onclick="backToChoiceFromMotoTester()">Volver al inicio</button>
+        </form>
+    </div>
 </div>
 <script>
 (function () {
@@ -213,6 +236,9 @@
     const chatchetoSection = document.getElementById("chatcheto-login");
     const chatchetoForm = document.getElementById("chatcheto-form");
     const chatchetoError = document.getElementById("chatcheto-error");
+    const motoTesterSection = document.getElementById("moto-tester-login");
+    const motoTesterForm = document.getElementById("moto-tester-form");
+    const motoTesterError = document.getElementById("moto-tester-error");
 
     window.showProtectedForm = function () {
         choiceSection.classList.add("hidden");
@@ -226,10 +252,12 @@
         protectedSection.classList.add("hidden");
         scadaSection.classList.add("hidden");
         chatchetoSection.classList.add("hidden");
+        motoTesterSection.classList.add("hidden");
         choiceSection.classList.remove("hidden");
         errorBox.textContent = "";
         scadaError.textContent = "";
         chatchetoError.textContent = "";
+        motoTesterError.textContent = "";
     };
 
     window.showScadaForm = function () {
@@ -258,6 +286,20 @@
         chatchetoSection.classList.add("hidden");
         choiceSection.classList.remove("hidden");
         chatchetoError.textContent = "";
+    };
+
+    window.showMotoTesterForm = function () {
+        choiceSection.classList.add("hidden");
+        motoTesterSection.classList.remove("hidden");
+        motoTesterError.textContent = "";
+        motoTesterForm.reset();
+        document.getElementById("moto-tester-user").focus();
+    };
+
+    window.backToChoiceFromMotoTester = function () {
+        motoTesterSection.classList.add("hidden");
+        choiceSection.classList.remove("hidden");
+        motoTesterError.textContent = "";
     };
 
     window.enterSecure = async function () {
@@ -370,6 +412,38 @@
             chatchetoError.textContent = "No se pudo validar el acceso.";
         } catch (err) {
             chatchetoError.textContent = "Error al contactar el router.";
+        }
+    });
+
+    motoTesterForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        motoTesterError.textContent = "";
+        const user = (document.getElementById("moto-tester-user").value || "").trim();
+        const pass = document.getElementById("moto-tester-pass").value || "";
+        if (!user || !pass) {
+            motoTesterError.textContent = "Usuario y contrasena son requeridos.";
+            return;
+        }
+        try {
+            const response = await fetch("/mode/protected", {
+                method: "POST",
+                headers: {
+                    "X-Mode-User": user,
+                    "X-Mode-Pass": pass
+                },
+                credentials: "same-origin"
+            });
+            if (response.status === 204) {
+                window.location.href = "/moto-tester/";
+                return;
+            }
+            if (response.status === 403) {
+                motoTesterError.textContent = "Credenciales invalidas.";
+                return;
+            }
+            motoTesterError.textContent = "No se pudo validar el acceso.";
+        } catch (err) {
+            motoTesterError.textContent = "Error al contactar el router.";
         }
     });
 })();

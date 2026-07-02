@@ -11,6 +11,7 @@ Este proyecto concentra la frontera publica:
 - Pantalla de bienvenida de `comunicaciones.servicoop.com.ar`.
 - Seleccion de modo seguro/protegido para Lechuza.
 - Reverse proxy hacia servicios internos de `infra-monitor` y `chat-global`.
+- Reverse proxy hacia `moto-tester`.
 - Repositorio HTTP de artefactos APK.
 
 La logica de ruteo publico no pertenece a `infra-monitor` ni a `chat-global`.
@@ -46,6 +47,7 @@ Orden operativo recomendado:
 2. Levantar `router-atrevido`.
 3. Levantar `infra-monitor/lechuza-server`.
 4. Levantar `chat-global/chatcheto`.
+5. Levantar `moto-tester`.
 
 ## Configuracion
 
@@ -72,6 +74,7 @@ EDGE_PROTECTED_PASS=...
 | `/chatcheto-api/` | `chat-core` |
 | `/chatcheto-geo/` | `geo-posicion` |
 | `/chatcheto-dashboard-api/` | `dashboard-service` |
+| `/moto-tester/` | `trasvase-tester` |
 | `/repo/` | Repositorio navegable servido por `repo-service` |
 
 ## Repositorio Trafito

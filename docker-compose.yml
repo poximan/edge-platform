@@ -1,35 +1,42 @@
+name: edge-platform
+
 services:
-  edge-router:
+  edge-gateway:
+    image: edge-platform-edge-gateway:2.0.0
+    container_name: edge-platform-edge-gateway
     build:
       context: .
-      dockerfile: edge-router/Dockerfile
-    image: img-edge-router:1.0.0
-    container_name: cont-edge-router
+      dockerfile: edge-gateway/Dockerfile
     env_file:
       - .env
     depends_on:
-      repo-service:
-        condition: service_started
+      artifact-repository:
+        condition: service_healthy
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:8081"
+      - "443:8443"
+    volumes:
+      - ./edge-gateway/config/routes.txt:/etc/nginx/source/routes.txt:ro
     restart: unless-stopped
     networks:
-      - edge
+      edge:
+        aliases:
+          - servicoop-edge-gateway
 
-  repo-service:
+  artifact-repository:
+    image: edge-platform-artifact-repository:2.0.0
+    container_name: edge-platform-artifact-repository
     build:
       context: .
-      dockerfile: repo-service/Dockerfile
-    image: img-repo-service:1.0.0
-    container_name: cont-repo-service
+      dockerfile: artifact-repository/Dockerfile
     volumes:
-      - ./volumes/repo:/repo:ro
+      - ./volumes/repository:/repository:ro
     restart: unless-stopped
     networks:
-      - edge
+      edge:
+        aliases:
+          - artifact-repository
 
 networks:
   edge:
     name: servicoop-edge-net
-    external: true

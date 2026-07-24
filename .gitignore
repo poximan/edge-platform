@@ -1,3 +1,4 @@
 .env
-volumes/repo/*.apk
-volumes/repo/trafito-app/*
+__pycache__/
+*.py[cod]
+volumes/repository/*/app.apk

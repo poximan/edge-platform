@@ -1,0 +1,14 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.py text eol=lf
+*.conf text eol=lf
+*.txt text eol=lf
+*.apk binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary

@@ -1,0 +1,43 @@
+# scope|match|path|destination|uri_mode|access|profile|mirror
+# destination usa host:puerto. Cada fila representa una unica regla.
+# Este archivo define ruteo HTTP, no reserva puertos. Los contratos TCP viven
+# en /ports.txt y validate-docker-conventions.py verifica ambas fuentes.
+
+public|exact|/dash|redirect:/dash/|-|public|-|-
+public|prefix|/dash/|panelexemys:8052|preserve|public|standard|-
+public|prefix|/api/|modbus-collector-service:8084|preserve|public|standard|-
+public|exact|/pve|redirect:/pve/|-|public|-|-
+public|prefix|/pve/|pve-service:8083|strip|public|standard|-
+public|prefix|/router/|modem-link-monitor:8086|strip|public|standard|-
+public|exact|/scada|redirect:/scada/|-|public|-|-
+public|prefix|/scada/|scada-citec-service:8094|strip|public|standard|-
+public|exact|/chatcheto|redirect:/chatcheto/|-|public|-|-
+public|prefix|/chatcheto/|atendedor:5173|strip|protected-redirect|stream|-
+public|exact|/chatcheto-api|redirect:/chatcheto-api/|-|public|-|-
+public|prefix|/chatcheto-api/|chat-core:4000|strip|protected-deny|stream|-
+public|exact|/chatcheto-geo|redirect:/chatcheto-geo/|-|public|-|-
+public|prefix|/chatcheto-geo/|geo-posicion:4500|strip|protected-deny|stream|-
+public|exact|/chatcheto-dashboard-api|redirect:/chatcheto-dashboard-api/|-|public|-|-
+public|prefix|/chatcheto-dashboard-api/|dashboard-service:4200|strip|protected-deny|stream|-
+public|exact|/moto-tester|redirect:/moto-tester/|-|public|-|-
+public|prefix|/moto-tester/|trasvase-tester:8080|strip|protected-redirect|stream|-
+public|exact|/repo|redirect:/repo/|-|public|-|-
+public|prefix|/repo/|artifact-repository:8080|preserve|public|static|-
+
+afondo.internal|exact|/health|afondo-central-server:8080|preserve|public|standard|-
+afondo.internal|exact|/api/admin/events|afondo-central-server:8080|strip|public|sse|-
+afondo.internal|prefix|/api/|afondo-central-server:8080|strip|public|standard|-
+afondo.internal|exact|/repo|redirect:/repo/|-|public|-|-
+afondo.internal|prefix|/repo/|artifact-repository:8080|preserve|public|static|-
+afondo.internal|prefix|/|afondo-admin-web:8080|preserve|public|standard|-
+
+floral.internal|exact|/|redirect:/carta|-|public|-|-
+floral.internal|exact|/health|floral-admin-dashboard:8084|preserve|public|standard|-
+floral.internal|exact|/carta|floral-web-server:8080|preserve|public|standard|floral-admin-dashboard:8084/internal/access-event
+floral.internal|prefix|/carta/|floral-web-server:8080|preserve|public|standard|floral-admin-dashboard:8084/internal/access-event
+floral.internal|exact|/gestion|floral-web-server:8080|preserve|public|standard|floral-admin-dashboard:8084/internal/access-event
+floral.internal|prefix|/gestion/|floral-web-server:8080|preserve|public|standard|floral-admin-dashboard:8084/internal/access-event
+floral.internal|prefix|/api/|floral-web-server:8080|preserve|public|stream|floral-admin-dashboard:8084/internal/access-event
+floral.internal|prefix|/assets/|floral-web-server:8080|preserve|public|static|floral-admin-dashboard:8084/internal/access-event
+floral.internal|exact|/admin|floral-admin-dashboard:8084|preserve|public|stream|-
+floral.internal|prefix|/admin/|floral-admin-dashboard:8084|preserve|public|stream|-

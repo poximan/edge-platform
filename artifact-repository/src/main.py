@@ -6,11 +6,11 @@ import re
 import sys
 import threading
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 
 from flask import Flask, Response, jsonify, send_file
 from loguru import logger as androguard_logger
+from src.time_provider import PresentationLogFormatter, time_provider
 
 
 androguard_logger.remove()
@@ -23,7 +23,9 @@ APP_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
 REPOSITORY_ROOT = Path(os.environ.get("REPOSITORY_ROOT", "/repository")).resolve()
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(message)s")
+log_handler = logging.StreamHandler()
+log_handler.setFormatter(PresentationLogFormatter("%(asctime)s %(levelname)s %(message)s"))
+logging.basicConfig(level=logging.WARNING, handlers=[log_handler])
 
 
 @dataclass(frozen=True)
@@ -81,7 +83,7 @@ class MetadataCache:
                 version_code=str(version_code).strip(),
                 size_bytes=stat.st_size,
                 content_hash=digest.hexdigest(),
-                modified_at=datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
+                modified_at=time_provider.utc_iso_from_epoch(stat.st_mtime),
                 signature=signature,
             )
             self._metadata[app_name] = metadata

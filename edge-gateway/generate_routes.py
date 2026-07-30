@@ -128,6 +128,8 @@ def render_proxy(rule: Rule, index: int) -> list[str]:
         body.append(f"mirror /__edge_mirror_{index};")
         body.append("mirror_request_body off;")
 
+    body.append(f"set $route_upstream_{index} http://{rule.destination};")
+
     if rule.uri_mode == "strip":
         escaped_path = re.escape(rule.path)
         if rule.match == "exact":
@@ -137,7 +139,6 @@ def render_proxy(rule: Rule, index: int) -> list[str]:
 
     body.extend(
         [
-            f"set $route_upstream_{index} http://{rule.destination};",
             f"proxy_pass $route_upstream_{index};",
             "proxy_http_version 1.1;",
             "proxy_connect_timeout 3s;",

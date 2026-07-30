@@ -38,5 +38,5 @@ envsubst '${EDGE_PROTECTED_USER} ${EDGE_PROTECTED_PASS}' \
     < /etc/nginx/source/protected-users.map \
     > /etc/nginx/generated/protected-users.map
 
-nginx -t -c /etc/nginx/source/nginx.conf
-exec nginx -c /etc/nginx/source/nginx.conf -g 'daemon off;'
+nginx -e /dev/stderr -t -c /etc/nginx/source/nginx.conf
+exec nginx -e /dev/stderr -c /etc/nginx/source/nginx.conf -g 'daemon off;'

@@ -1,62 +1,67 @@
-# Frontera HTTP central de Servicoop
+# Frontera HTTP de Servicoop
 
-Este proyecto contiene dos capacidades independientes:
+`edge-platform` contiene dos servicios:
 
-- `edge-gateway`: unico punto de ruteo HTTP/HTTPS de la plataforma.
-- `artifact-repository`: repositorio central de aplicaciones Android.
+- `edge-gateway`: unico router HTTP/HTTPS de los productos desplegados en el host.
+- `artifact-repository`: repositorio central de APK y metadata de versiones.
 
-Los productos no deben incorporar routers propios. Sus servicios publicables se
-conectan a `servicoop-edge-net`; sus adaptadores de canal envian el Host interno
-definido para el producto al gateway.
+## Ingreso publico
 
-## Reglas de ruteo
+`comunicaciones.servicoop.com.ar` es administrado fuera de este workspace. El DNS apunta al router frontera y ese equipo reenvia el trafico `80/443` al host Docker administrado localmente. Este repositorio comienza su responsabilidad cuando la conexion llega al host.
 
-Las reglas se editan en `edge-gateway/config/routes.txt`. Cada fila usa ocho
-campos separados por `|`:
+```text
+comunicaciones.servicoop.com.ar
+  -> router frontera externo
+  -> host Docker:80/443
+  -> edge-gateway
+  -> servicio seleccionado por ruta
+```
+
+Si el router solo hace NAT o passthrough, el certificado publico debe terminar en `edge-gateway`. Si termina TLS, el certificado pertenece al router y debe existir un contrato explicito para el tramo hacia el host.
+
+Los quick tunnels pertenecen a cada producto, no a `edge-platform`. Son conexiones salientes y no compiten con los puertos `80/443`. Los adaptadores de canal ingresan al listener interno `8080` con un Host de producto, por ejemplo `afondo.internal`.
+
+## Ruteo
+
+`edge-gateway/config/routes.txt` es la unica fuente de verdad. Formato:
 
 ```text
 scope|match|path|destination|uri_mode|access|profile|mirror
 ```
 
-- `scope`: `public` o el Host interno del producto, por ejemplo `afondo.internal`.
+- `scope`: `public` o Host interno del producto.
 - `match`: `exact` o `prefix`.
-- `path`: ruta publica.
-- `destination`: servicio o IP con puerto, por ejemplo `afondo-central-server:8080`.
-- `uri_mode`: `preserve` conserva la ruta y `strip` quita el prefijo.
+- `destination`: servicio y puerto Docker.
+- `uri_mode`: `preserve` conserva la ruta; `strip` quita el prefijo.
 - `access`: `public`, `protected-deny` o `protected-redirect`.
 - `profile`: `standard`, `stream`, `sse` o `static`.
-- `mirror`: `-` o un destino interno para telemetria.
+- `mirror`: `-` o destino interno de telemetria.
 
-Una redireccion local usa `redirect:/ruta` como destino y `-` en los campos que
-no corresponden. El contenedor valida todas las filas y aborta ante una regla
-invalida o duplicada.
-
-## Repositorio de APK
-
-La estructura canonica es:
-
-```text
-volumes/repository/{nombre-aplicacion}/app.apk
-```
-
-Rutas publicadas:
-
-```text
-/repo/
-/repo/{nombre-aplicacion}/release
-/repo/{nombre-aplicacion}/app.apk
-```
-
-`release` informa version, versionCode, tamano, fecha y SHA-256 obtenidos del APK.
+Las filas invalidas o duplicadas abortan el inicio. Una redireccion usa `redirect:/ruta` como destino.
 
 ## Red compartida
 
-Este Compose es el propietario de `servicoop-edge-net` y la crea al desplegar la
-plataforma central. Los stacks de producto la declaran externa y se conectan a
-ella, por lo que `edge-platform` debe desplegarse primero. Esta propiedad unica
-evita comandos manuales y elimina la ambiguedad sobre quien administra la red.
+Este Compose crea y administra `servicoop-edge-net`. Los productos la declaran `external: true`; por eso `edge-platform` se despliega primero. No se debe crear la red manualmente ni declarar `edge-platform` como consumidor externo.
+
+Solo deben conectarse a esta red los servicios alcanzables por el gateway.
+
+## Repositorio de APK
+
+Estructura:
+
+```text
+volumes/repository/{aplicacion}/app.apk
+```
+
+Rutas:
+
+```text
+/repo/{aplicacion}/release
+/repo/{aplicacion}/app.apk
+```
+
+`release` informa version, versionCode, tamano, fecha y SHA-256 extraidos del APK.
 
 ## Configuracion
 
-Copiar `.env.example` como `.env` y completar las credenciales del modo
-protegido. No se admiten variables obligatorias vacias.
+Copiar `.env.example` como `.env` y completar las credenciales del modo protegido. No se admiten variables obligatorias vacias ni secretos versionados.

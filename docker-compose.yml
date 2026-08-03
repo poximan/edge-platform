@@ -2,6 +2,12 @@ name: edge-platform
 
 services:
   edge-gateway:
+    pids_limit: 256
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     image: edge-platform-edge-gateway:2.0.0
     container_name: edge-platform-edge-gateway
     build:
@@ -24,6 +30,8 @@ services:
           - servicoop-edge-gateway
 
   artifact-repository:
+    pids_limit: 256
+    logging: *default-logging
     image: edge-platform-artifact-repository:2.0.0
     container_name: edge-platform-artifact-repository
     build:

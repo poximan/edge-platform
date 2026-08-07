@@ -114,16 +114,25 @@ def indent(lines: list[str], spaces: int) -> list[str]:
 
 def render_access(rule: Rule) -> list[str]:
     if rule.access == "protected-deny":
-        return ["if ($has_protected_mode = 0) { return 403; }"]
+        return ["auth_request /__edge_auth_verify;"]
     if rule.access == "protected-redirect":
-        return ["if ($has_protected_mode = 0) { return 302 /; }"]
-    return []
+        return [
+            "auth_request /__edge_auth_verify;",
+            "error_page 401 403 = @edge_auth_redirect;",
+        ]
+    return ["auth_request /__edge_auth_session;"]
 
 
 def render_proxy(rule: Rule, index: int) -> list[str]:
     location = f"location = {rule.path}" if rule.match == "exact" else f"location ^~ {rule.path}"
     lines = [f"{location} {{"]
     body = render_access(rule)
+    body.extend(
+        [
+            "auth_request_set $edge_mode $upstream_http_x_edge_mode;",
+            "auth_request_set $edge_user $upstream_http_x_edge_user;",
+        ],
+    )
     if rule.mirror is not None:
         body.append(f"mirror /__edge_mirror_{index};")
         body.append("mirror_request_body off;")
@@ -148,6 +157,8 @@ def render_proxy(rule: Rule, index: int) -> list[str]:
             "proxy_set_header X-Forwarded-Proto $scheme;",
             "proxy_set_header X-Forwarded-Host $host;",
             "proxy_set_header X-Forwarded-Port $server_port;",
+            "proxy_set_header X-Edge-Mode $edge_mode;",
+            "proxy_set_header X-Edge-User $edge_user;",
             "proxy_set_header Upgrade $http_upgrade;",
             "proxy_set_header Connection $connection_upgrade;",
         ],
@@ -257,6 +268,26 @@ def render_internal(rules: list[Rule]) -> str:
                 "        access_log off;",
                 "        default_type application/json;",
                 "        return 200 '{\"status\":\"UP\"}';",
+                "    }",
+                "",
+                "    location = /__edge_auth_session {",
+                "        internal;",
+                "        proxy_pass http://edge-auth:8085/session;",
+                "        proxy_pass_request_body off;",
+                "        proxy_set_header Content-Length \\;",
+                "        proxy_set_header Cookie $http_cookie;",
+                "    }",
+                "",
+                "    location = /__edge_auth_verify {",
+                "        internal;",
+                "        proxy_pass http://edge-auth:8085/verify;",
+                "        proxy_pass_request_body off;",
+                "        proxy_set_header Content-Length \\;",
+                "        proxy_set_header Cookie $http_cookie;",
+                "    }",
+                "",
+                "    location @edge_auth_redirect {",
+                "        return 302 /;",
                 "    }",
                 "",
             ],

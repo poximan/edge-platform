@@ -1,8 +1,9 @@
 # Frontera HTTP de Servicoop
 
-`edge-platform` contiene dos servicios:
+`edge-platform` contiene tres servicios:
 
 - `edge-gateway`: unico router HTTP/HTTPS de los productos desplegados en el host.
+- `edge-auth`: emite y valida la sesion firmada del modo protegido.
 - `artifact-repository`: repositorio central de APK y metadata de versiones.
 
 ## Ingreso publico
@@ -39,6 +40,8 @@ scope|match|path|destination|uri_mode|access|profile|mirror
 
 Las filas invalidas o duplicadas abortan el inicio. Una redireccion usa `redirect:/ruta` como destino.
 
+Las rutas publicas reciben `X-Edge-Mode: secure` o `protected` despues de validar la sesion. Las rutas protegidas usan `auth_request`; nunca confian en una cookie ni en un encabezado aportado directamente por el cliente. El inicio de sesion se limita por IP y la cookie es firmada, `Secure`, `HttpOnly` y `SameSite=Strict`.
+
 ## Red compartida
 
 Este Compose crea y administra `servicoop-edge-net`. Los productos la declaran `external: true`; por eso `edge-platform` se despliega primero. No se debe crear la red manualmente ni declarar `edge-platform` como consumidor externo.
@@ -64,4 +67,4 @@ Rutas:
 
 ## Configuracion
 
-Copiar `.env.example` como `.env` y completar las credenciales del modo protegido. No se admiten variables obligatorias vacias ni secretos versionados.
+Copiar `.env.example` como `.env` y completar las credenciales y un secreto aleatorio de al menos 32 caracteres. No se admiten variables obligatorias vacias ni secretos versionados.

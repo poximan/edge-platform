@@ -1,7 +1,8 @@
 # scope|match|path|destination|uri_mode|access|profile|mirror
 # destination usa host:puerto. Cada fila representa una unica regla.
 # Este archivo define ruteo HTTP, no reserva puertos. Los contratos TCP viven
-# en /ports.txt y validate-docker-conventions.py verifica ambas fuentes.
+# en /ports.txt. Cada destino debe corresponder a un servicio o alias Docker
+# existente y a un service_port registrado.
 
 public|exact|/dash|redirect:/dash/|-|public|-|-
 public|prefix|/dash/|panelexemys:8052|preserve|public|standard|-
@@ -9,8 +10,8 @@ public|prefix|/api/|modbus-collector-service:8084|preserve|public|standard|-
 public|exact|/pve|redirect:/pve/|-|public|-|-
 public|prefix|/pve/|pve-service:8083|strip|public|standard|-
 public|prefix|/router/|modem-link-monitor:8086|strip|public|standard|-
-public|exact|/scada|redirect:/scada/|-|public|-|-
-public|prefix|/scada/|scada-citec-service:8094|strip|public|standard|-
+public|exact|/alarmero|redirect:/alarmero/|-|public|-|-
+public|prefix|/alarmero/|alarmero-service:8094|strip|protected-redirect|standard|-
 public|exact|/chatcheto|redirect:/chatcheto/|-|public|-|-
 public|prefix|/chatcheto/|atendedor:5173|strip|protected-redirect|stream|-
 public|exact|/chatcheto-api|redirect:/chatcheto-api/|-|public|-|-

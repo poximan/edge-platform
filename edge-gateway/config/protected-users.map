@@ -1,4 +1,0 @@
-map $http_x_mode_user $protected_mode_expected_pass {
-    default "";
-    "${EDGE_PROTECTED_USER}" "${EDGE_PROTECTED_PASS}";
-}

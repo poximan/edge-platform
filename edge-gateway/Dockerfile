@@ -3,7 +3,7 @@ FROM python:3.13.5-alpine3.22
 ARG APP_UID=1000
 ARG APP_GID=1000
 
-RUN apk add --no-cache nginx openssl gettext \
+RUN apk add --no-cache nginx openssl \
     && addgroup --gid "${APP_GID}" appgroup \
     && adduser --uid "${APP_UID}" --ingroup appgroup --disabled-password --home /home/appuser --shell /bin/sh appuser \
     && install -d -o "${APP_UID}" -g "${APP_GID}" \

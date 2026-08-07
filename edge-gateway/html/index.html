@@ -144,9 +144,9 @@
                     <button class="secondary" type="button" onclick="showProtectedForm()">Continuar a autenticacion</button>
                 </div>
                 <div class="card">
-                    <h3>Panel SCADA</h3>
-                    <p>Mimico scada electrico</p>
-                    <button class="ghost" type="button" onclick="showScadaForm()">Entrar al panel</button>
+                    <h3>Alarmero</h3>
+                    <p>Incidencias activas, historial, despachos y tiempos de despeje</p>
+                    <button class="secondary" type="button" onclick="showAlarmeroForm()">Abrir alarmero</button>
                 </div>
             </div>
         </section>
@@ -184,19 +184,6 @@
             <button class="ghost" type="button" onclick="backToChoice()">Volver al inicio</button>
         </form>
     </div>
-    <div id="scada-login" class="card hidden">
-        <h2>Acceso SCADA Citec</h2>
-        <p>Se requiere confirmar credenciales protegidas antes de abrir el mimico.</p>
-        <form id="scada-form">
-            <label for="scada-user">Usuario</label>
-            <input id="scada-user" name="user" type="text" autocomplete="username" required>
-            <label for="scada-pass">Contrasena</label>
-            <input id="scada-pass" name="pass" type="password" autocomplete="current-password" required>
-            <div class="error" id="scada-error"></div>
-            <button class="secondary" type="submit">Entrar al SCADA</button>
-            <button class="ghost" type="button" onclick="backToChoiceFromScada()">Volver al inicio</button>
-        </form>
-    </div>
     <div id="chatcheto-login" class="card hidden">
         <h2>Acceso chatcheto</h2>
         <p>Se requiere confirmar credenciales protegidas antes de abrir el atendedor.</p>
@@ -208,6 +195,19 @@
             <div class="error" id="chatcheto-error"></div>
             <button class="secondary" type="submit">Abrir chatcheto</button>
             <button class="ghost" type="button" onclick="backToChoiceFromChatcheto()">Volver al inicio</button>
+        </form>
+    </div>
+    <div id="alarmero-login" class="card hidden">
+        <h2>Acceso alarmero</h2>
+        <p>Se requiere confirmar credenciales protegidas para consultar las incidencias.</p>
+        <form id="alarmero-form">
+            <label for="alarmero-user">Usuario</label>
+            <input id="alarmero-user" name="user" type="text" autocomplete="username" required>
+            <label for="alarmero-pass">Contrasena</label>
+            <input id="alarmero-pass" name="pass" type="password" autocomplete="current-password" required>
+            <div class="error" id="alarmero-error"></div>
+            <button class="secondary" type="submit">Abrir alarmero</button>
+            <button class="ghost" type="button" onclick="backToChoiceFromAlarmero()">Volver al inicio</button>
         </form>
     </div>
     <div id="moto-tester-login" class="card hidden">
@@ -230,12 +230,12 @@
     const protectedSection = document.getElementById("protected-login");
     const protectedForm = document.getElementById("protected-form");
     const errorBox = document.getElementById("error-msg");
-    const scadaSection = document.getElementById("scada-login");
-    const scadaForm = document.getElementById("scada-form");
-    const scadaError = document.getElementById("scada-error");
     const chatchetoSection = document.getElementById("chatcheto-login");
     const chatchetoForm = document.getElementById("chatcheto-form");
     const chatchetoError = document.getElementById("chatcheto-error");
+    const alarmeroSection = document.getElementById("alarmero-login");
+    const alarmeroForm = document.getElementById("alarmero-form");
+    const alarmeroError = document.getElementById("alarmero-error");
     const motoTesterSection = document.getElementById("moto-tester-login");
     const motoTesterForm = document.getElementById("moto-tester-form");
     const motoTesterError = document.getElementById("moto-tester-error");
@@ -250,28 +250,28 @@
 
     window.backToChoice = function () {
         protectedSection.classList.add("hidden");
-        scadaSection.classList.add("hidden");
         chatchetoSection.classList.add("hidden");
+        alarmeroSection.classList.add("hidden");
         motoTesterSection.classList.add("hidden");
         choiceSection.classList.remove("hidden");
         errorBox.textContent = "";
-        scadaError.textContent = "";
         chatchetoError.textContent = "";
+        alarmeroError.textContent = "";
         motoTesterError.textContent = "";
     };
 
-    window.showScadaForm = function () {
+    window.showAlarmeroForm = function () {
         choiceSection.classList.add("hidden");
-        scadaSection.classList.remove("hidden");
-        scadaError.textContent = "";
-        scadaForm.reset();
-        document.getElementById("scada-user").focus();
+        alarmeroSection.classList.remove("hidden");
+        alarmeroError.textContent = "";
+        alarmeroForm.reset();
+        document.getElementById("alarmero-user").focus();
     };
 
-    window.backToChoiceFromScada = function () {
-        scadaSection.classList.add("hidden");
+    window.backToChoiceFromAlarmero = function () {
+        alarmeroSection.classList.add("hidden");
         choiceSection.classList.remove("hidden");
-        scadaError.textContent = "";
+        alarmeroError.textContent = "";
     };
 
     window.showChatchetoForm = function () {
@@ -351,38 +351,6 @@
         }
     });
 
-    scadaForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
-        scadaError.textContent = "";
-        const user = (document.getElementById("scada-user").value || "").trim();
-        const pass = document.getElementById("scada-pass").value || "";
-        if (!user || !pass) {
-            scadaError.textContent = "Usuario y contrasena son requeridos.";
-            return;
-        }
-        try {
-            const response = await fetch("/mode/protected", {
-                method: "POST",
-                headers: {
-                    "X-Mode-User": user,
-                    "X-Mode-Pass": pass
-                },
-                credentials: "same-origin"
-            });
-            if (response.status === 204) {
-                window.location.href = "/scada/";
-                return;
-            }
-            if (response.status === 403) {
-                scadaError.textContent = "Credenciales invalidas.";
-                return;
-            }
-            scadaError.textContent = "No se pudo validar el acceso.";
-        } catch (err) {
-            scadaError.textContent = "Error al contactar el router.";
-        }
-    });
-
     chatchetoForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         chatchetoError.textContent = "";
@@ -412,6 +380,33 @@
             chatchetoError.textContent = "No se pudo validar el acceso.";
         } catch (err) {
             chatchetoError.textContent = "Error al contactar el router.";
+        }
+    });
+
+    alarmeroForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        alarmeroError.textContent = "";
+        const user = (document.getElementById("alarmero-user").value || "").trim();
+        const pass = document.getElementById("alarmero-pass").value || "";
+        if (!user || !pass) {
+            alarmeroError.textContent = "Usuario y contrasena son requeridos.";
+            return;
+        }
+        try {
+            const response = await fetch("/mode/protected", {
+                method: "POST",
+                headers: {"X-Mode-User": user, "X-Mode-Pass": pass},
+                credentials: "same-origin"
+            });
+            if (response.status === 204) {
+                window.location.href = "/alarmero/";
+                return;
+            }
+            alarmeroError.textContent = response.status === 403
+                ? "Credenciales invalidas."
+                : "No se pudo validar el acceso.";
+        } catch (err) {
+            alarmeroError.textContent = "Error al contactar el router.";
         }
     });
 

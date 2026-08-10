@@ -9,7 +9,5 @@ shell de navegación. Los componentes de dominio permanecen en cada producto.
 Consumidores actuales:
 
 - `products/comunic-mon/lechuza-server/alarmero-service/frontend`;
+- `products/comunic-mon/lechuza-server/panelexemys/frontend`;
 - `products/moto-tester/trasvase-tester/frontend`.
-
-Panelexemys se incorpora página por página después de extraer los contratos HTTP
-que hoy permanecen dentro de callbacks Dash.

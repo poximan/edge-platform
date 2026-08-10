@@ -23,6 +23,10 @@ comunicaciones.servicoop.com.ar
 
 Si el router solo hace NAT o passthrough, el certificado publico debe terminar en `edge-gateway`. Si termina TLS, el certificado pertenece al router y debe existir un contrato explicito para el tramo hacia el host.
 
+El puerto `8443` pertenece exclusivamente al listener no privilegiado dentro del
+contenedor. El gateway normaliza el origen publico como HTTPS `443`, emite
+redirecciones relativas y nunca propaga `8443` a navegadores ni servicios.
+
 Los quick tunnels pertenecen a cada producto, no a la plataforma. Son conexiones salientes y no compiten con los puertos `80/443`. Los adaptadores de canal ingresan al listener interno `8080` con un Host de producto, por ejemplo `afondo.internal`.
 
 ## Ruteo

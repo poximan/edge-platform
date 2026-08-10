@@ -1,4 +1,7 @@
 .env
 __pycache__/
 *.py[cod]
-volumes/repository/*/app.apk
+**/node_modules/
+**/dist/
+*.tsbuildinfo
+artifact-repository/volumes/repository/*/app.apk

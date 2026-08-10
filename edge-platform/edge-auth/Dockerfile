@@ -9,10 +9,10 @@ RUN groupadd --gid "${APP_GID}" appgroup \
 
 WORKDIR /app
 
-COPY --chown=${APP_UID}:${APP_GID} edge-auth/requirements.txt /app/requirements.txt
+COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-auth/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --requirement /app/requirements.txt
 
-COPY --chown=${APP_UID}:${APP_GID} edge-auth/src /app/src
+COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-auth/src /app/src
 
 ENV PYTHONPATH=/app \
     EDGE_SESSION_COOKIE_NAME=servicoop_edge_session \

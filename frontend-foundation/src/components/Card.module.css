@@ -1,0 +1,7 @@
+.card {
+  overflow: hidden;
+  border: 1px solid var(--sc-color-border);
+  border-radius: var(--sc-radius-lg);
+  background: linear-gradient(145deg, var(--sc-color-surface-raised), var(--sc-color-surface));
+  box-shadow: var(--sc-shadow-raised);
+}

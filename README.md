@@ -1,10 +1,13 @@
-# Frontera HTTP de Servicoop
+# Plataforma compartida de Servicoop
 
-`edge-platform` contiene tres servicios:
+Este repositorio contiene capacidades transversales sin dominio de producto.
+Existe un unico `docker-compose.yml`, porque los servicios de runtime se operan
+como un solo despliegue de plataforma.
 
-- `edge-gateway`: unico router HTTP/HTTPS de los productos desplegados en el host.
-- `edge-auth`: emite y valida la sesion firmada del modo protegido.
+- `edge-platform/edge-gateway`: unico router HTTP/HTTPS del host.
+- `edge-platform/edge-auth`: emite y valida la sesion firmada del modo protegido.
 - `artifact-repository`: repositorio central de APK y metadata de versiones.
+- `frontend-foundation`: dependencia de build compartida por los frontends web.
 
 ## Ingreso publico
 
@@ -20,11 +23,11 @@ comunicaciones.servicoop.com.ar
 
 Si el router solo hace NAT o passthrough, el certificado publico debe terminar en `edge-gateway`. Si termina TLS, el certificado pertenece al router y debe existir un contrato explicito para el tramo hacia el host.
 
-Los quick tunnels pertenecen a cada producto, no a `edge-platform`. Son conexiones salientes y no compiten con los puertos `80/443`. Los adaptadores de canal ingresan al listener interno `8080` con un Host de producto, por ejemplo `afondo.internal`.
+Los quick tunnels pertenecen a cada producto, no a la plataforma. Son conexiones salientes y no compiten con los puertos `80/443`. Los adaptadores de canal ingresan al listener interno `8080` con un Host de producto, por ejemplo `afondo.internal`.
 
 ## Ruteo
 
-`edge-gateway/config/routes.txt` es la unica fuente de verdad. Formato:
+`edge-platform/edge-gateway/config/routes.txt` es la unica fuente de verdad. Formato:
 
 ```text
 scope|match|path|destination|uri_mode|access|profile|mirror
@@ -44,7 +47,7 @@ Las rutas publicas reciben `X-Edge-Mode: secure` o `protected` despues de valida
 
 ## Red compartida
 
-Este Compose crea y administra `servicoop-edge-net`. Los productos la declaran `external: true`; por eso `edge-platform` se despliega primero. No se debe crear la red manualmente ni declarar `edge-platform` como consumidor externo.
+Este Compose crea y administra `servicoop-edge-net`. Los productos la declaran `external: true`; por eso `platform` se despliega primero. No se debe crear la red manualmente ni declarar la plataforma como consumidor externo.
 
 Solo deben conectarse a esta red los servicios alcanzables por el gateway.
 
@@ -53,7 +56,7 @@ Solo deben conectarse a esta red los servicios alcanzables por el gateway.
 Estructura:
 
 ```text
-volumes/repository/{aplicacion}/app.apk
+artifact-repository/volumes/repository/{aplicacion}/app.apk
 ```
 
 Rutas:
@@ -64,6 +67,16 @@ Rutas:
 ```
 
 `release` informa version, versionCode, tamano, fecha y SHA-256 extraidos del APK.
+
+## Fundacion frontend
+
+`frontend-foundation` es la unica fuente de verdad para tokens visuales,
+estilos base, componentes globales y la barra de navegacion de los productos web.
+Las interfaces nuevas usan React, TypeScript estricto y Vite; los estilos propios
+de cada dominio usan CSS Modules y no duplican decisiones globales.
+
+La fundacion se incorpora como dependencia durante el build. No es un servicio,
+no expone un puerto y no agrega acoplamiento HTTP en runtime.
 
 ## Configuracion
 

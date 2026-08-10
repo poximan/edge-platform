@@ -1,4 +1,4 @@
-name: edge-platform
+name: platform
 
 services:
   edge-gateway:
@@ -8,11 +8,11 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    image: edge-platform-edge-gateway:2.0.0
-    container_name: edge-platform-edge-gateway
+    image: platform-edge-gateway:2.0.0
+    container_name: platform-edge-gateway
     build:
       context: .
-      dockerfile: edge-gateway/Dockerfile
+      dockerfile: edge-platform/edge-gateway/Dockerfile
     env_file:
       - .env
     depends_on:
@@ -24,7 +24,7 @@ services:
       - "80:8081"
       - "443:8443"
     volumes:
-      - ./edge-gateway/config/routes.txt:/etc/nginx/source/routes.txt:ro
+      - ./edge-platform/edge-gateway/config/routes.txt:/etc/nginx/source/routes.txt:ro
     restart: unless-stopped
     networks:
       edge:
@@ -34,11 +34,11 @@ services:
   edge-auth:
     pids_limit: 256
     logging: *default-logging
-    image: edge-platform-edge-auth:2.0.0
-    container_name: edge-platform-edge-auth
+    image: platform-edge-auth:2.0.0
+    container_name: platform-edge-auth
     build:
       context: .
-      dockerfile: edge-auth/Dockerfile
+      dockerfile: edge-platform/edge-auth/Dockerfile
     env_file:
       - .env
     restart: unless-stopped
@@ -50,13 +50,13 @@ services:
   artifact-repository:
     pids_limit: 256
     logging: *default-logging
-    image: edge-platform-artifact-repository:2.0.0
-    container_name: edge-platform-artifact-repository
+    image: platform-artifact-repository:2.0.0
+    container_name: platform-artifact-repository
     build:
       context: .
       dockerfile: artifact-repository/Dockerfile
     volumes:
-      - ./volumes/repository:/repository:ro
+      - ./artifact-repository/volumes/repository:/repository:ro
     restart: unless-stopped
     networks:
       edge:

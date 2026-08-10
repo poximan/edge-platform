@@ -24,10 +24,10 @@ RUN apk add --no-cache nginx openssl \
 
 WORKDIR /app
 
-COPY --chown=${APP_UID}:${APP_GID} edge-gateway/generate_routes.py /app/generate_routes.py
-COPY --chown=${APP_UID}:${APP_GID} edge-gateway/config /etc/nginx/source
-COPY --chown=${APP_UID}:${APP_GID} edge-gateway/html /usr/share/nginx/html
-COPY --chown=${APP_UID}:${APP_GID} edge-gateway/docker-entrypoint.sh /app/docker-entrypoint.sh
+COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-gateway/generate_routes.py /app/generate_routes.py
+COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-gateway/config /etc/nginx/source
+COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-gateway/html /usr/share/nginx/html
+COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-gateway/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 RUN chmod 0555 /app/docker-entrypoint.sh /app/generate_routes.py
 

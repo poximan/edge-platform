@@ -463,6 +463,27 @@
                 credentials: "same-origin"
             });
             if (response.status === 204) {
+                const startupController = new AbortController();
+                const startupTimeout = window.setTimeout(() => startupController.abort(), 8000);
+                try {
+                    const entryResponse = await fetch("/chatcheto/", {
+                        credentials: "same-origin",
+                        cache: "reload",
+                        signal: startupController.signal
+                    });
+                    const entryUrl = new URL(entryResponse.url);
+                    if (!entryResponse.ok || entryUrl.pathname !== "/chatcheto/") {
+                        chatchetoError.textContent =
+                            "Chatcheto no esta disponible en este momento.";
+                        return;
+                    }
+                } catch {
+                    chatchetoError.textContent =
+                        "Chatcheto no respondio a tiempo. Intenta nuevamente.";
+                    return;
+                } finally {
+                    window.clearTimeout(startupTimeout);
+                }
                 window.location.href = "/chatcheto/";
                 return;
             }

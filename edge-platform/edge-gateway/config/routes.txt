@@ -13,7 +13,7 @@ public|prefix|/router/|modem-link-monitor:8086|strip|public|standard|-
 public|exact|/alarmero|redirect:/alarmero/|-|public|-|-
 public|prefix|/alarmero/|alarmero-service:8094|strip|protected-redirect|standard|-
 public|exact|/chatcheto|redirect:/chatcheto/|-|public|-|-
-public|prefix|/chatcheto/|atendedor:5173|strip|protected-redirect|stream|-
+public|prefix|/chatcheto/|atendedor:5173|strip|protected-redirect|static|-
 public|exact|/chatcheto-api|redirect:/chatcheto-api/|-|public|-|-
 public|prefix|/chatcheto-api/|chat-core:4000|strip|protected-deny|stream|-
 public|exact|/chatcheto-geo|redirect:/chatcheto-geo/|-|public|-|-

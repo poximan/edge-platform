@@ -7,3 +7,5 @@ export type { CardProps } from "./components/Card";
 export { StatusBadge } from "./components/StatusBadge";
 export type { StatusBadgeProps, StatusTone } from "./components/StatusBadge";
 export { UtcMinusThreePresenter } from "./UtcMinusThreePresenter";
+export { applyServicoopTheme, preferredServicoopTheme, SERVICOOP_THEME_STORAGE_KEY } from "./theme";
+export type { ServicoopTheme } from "./theme";

@@ -4,14 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Comunicaciones Servicoop</title>
+    <script>
+        (function () {
+            const stored = localStorage.getItem("servicoop-theme");
+            const theme = stored === "light" || stored === "dark"
+                ? stored
+                : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            document.documentElement.dataset.scTheme = theme;
+        })();
+    </script>
     <style>
         :root {
+            color-scheme: light;
+            --background: #edf0eb;
+            --surface: #f8f8f4;
+            --surface-soft: #e3e9e2;
+            --border: #c8d1c8;
+            --text: #303a34;
+            --muted: #69766e;
+            --primary: #668b78;
+            --primary-text: #ffffff;
+            --accent: #b08a5d;
+            --accent-text: #ffffff;
+            --danger: #aa6868;
+            --shadow: 0 12px 28px rgba(70, 83, 74, 0.1);
+        }
+        :root[data-sc-theme="dark"] {
             color-scheme: dark;
+            --background: #202622;
+            --surface: #29302b;
+            --surface-soft: #343c36;
+            --border: #465048;
+            --text: #e4e8e4;
+            --muted: #abb4ad;
+            --primary: #8aa997;
+            --primary-text: #18201b;
+            --accent: #b89a70;
+            --accent-text: #211d17;
+            --danger: #d49393;
+            --shadow: 0 12px 28px rgba(6, 10, 7, 0.18);
         }
         body {
             font-family: "Segoe UI", Arial, sans-serif;
-            background: #07121f;
-            color: #f5f7fa;
+            background: var(--background);
+            color: var(--text);
             margin: 0;
             min-height: 100vh;
             display: flex;
@@ -23,6 +59,29 @@
             max-width: 980px;
             padding: 32px 24px;
         }
+        .theme-switcher {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+        .theme-switcher button {
+            width: auto;
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            color: var(--muted);
+            cursor: pointer;
+        }
+        .theme-switcher button[aria-pressed="true"] {
+            border-color: var(--primary);
+            background: var(--surface-soft);
+            color: var(--text);
+        }
         h1 {
             margin: 0 0 8px;
             text-align: center;
@@ -31,7 +90,7 @@
         .subtitle {
             text-align: center;
             margin: 0 0 28px;
-            color: #9db1c7;
+            color: var(--muted);
             font-size: 16px;
         }
         .sections {
@@ -43,16 +102,16 @@
             grid-column: 1 / -1;
         }
         .system-section {
-            border: 1px solid #1f3853;
+            border: 1px solid var(--border);
             border-radius: 14px;
             padding: 20px;
-            background: rgba(15, 33, 53, 0.55);
+            background: var(--surface-soft);
         }
         .system-section h2 {
             margin: 0 0 16px;
             font-size: 18px;
             font-weight: 600;
-            color: #f5f7fa;
+            color: var(--text);
         }
         .cards {
             display: grid;
@@ -60,11 +119,11 @@
             gap: 16px;
         }
         .card {
-            background: #0f2135;
-            border: 1px solid #1f3853;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
+            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
             min-height: 188px;
@@ -76,7 +135,7 @@
         }
         .card p {
             margin-bottom: 18px;
-            color: #c3d3e6;
+            color: var(--muted);
             flex: 1;
         }
         .primary,
@@ -90,17 +149,17 @@
             cursor: pointer;
         }
         .primary {
-            background: #13967d;
-            color: #fff;
+            background: var(--primary);
+            color: var(--primary-text);
         }
         .secondary {
-            background: #ed9c2d;
-            color: #0f2135;
+            background: var(--accent);
+            color: var(--accent-text);
         }
         .ghost {
             background: transparent;
-            border: 1px solid #476385;
-            color: #c3d3e6;
+            border: 1px solid var(--border);
+            color: var(--muted);
         }
         form {
             display: flex;
@@ -109,19 +168,19 @@
         }
         label {
             font-size: 14px;
-            color: #9db1c7;
+            color: var(--muted);
         }
         input {
             padding: 10px 12px;
             border-radius: 8px;
-            border: 1px solid #375069;
-            background: #07121f;
-            color: #f5f7fa;
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--text);
             font-size: 15px;
         }
         .error {
             min-height: 20px;
-            color: #ff6b6b;
+            color: var(--danger);
             font-size: 14px;
         }
         .hidden {
@@ -139,6 +198,11 @@
 </head>
 <body>
 <div class="login-wrapper">
+    <div class="theme-switcher" role="group" aria-label="Apariencia">
+        <span>Tema</span>
+        <button data-theme-choice="light" type="button">Claro</button>
+        <button data-theme-choice="dark" type="button">Oscuro</button>
+    </div>
     <h1>sector comunicaciones</h1>
     <p class="subtitle">Selecciona el sistema de ingreso</p>
     <div id="mode-choice" class="sections">
@@ -251,6 +315,23 @@
     const motoTesterSection = document.getElementById("moto-tester-login");
     const motoTesterForm = document.getElementById("moto-tester-form");
     const motoTesterError = document.getElementById("moto-tester-error");
+    const themeButtons = document.querySelectorAll("[data-theme-choice]");
+
+    function updateThemeButtons(theme) {
+        themeButtons.forEach(function (button) {
+            button.setAttribute("aria-pressed", String(button.dataset.themeChoice === theme));
+        });
+    }
+
+    themeButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            const theme = button.dataset.themeChoice;
+            localStorage.setItem("servicoop-theme", theme);
+            document.documentElement.dataset.scTheme = theme;
+            updateThemeButtons(theme);
+        });
+    });
+    updateThemeButtons(document.documentElement.dataset.scTheme);
 
     window.showProtectedForm = function () {
         choiceSection.classList.add("hidden");

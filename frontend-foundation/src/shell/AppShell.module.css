@@ -13,8 +13,7 @@
   min-height: 4rem;
   padding: var(--sc-space-3) max(var(--sc-space-4), calc((100vw - var(--sc-content-width)) / 2));
   border-bottom: 1px solid var(--sc-color-border);
-  background: color-mix(in srgb, var(--sc-color-background) 92%, transparent);
-  backdrop-filter: blur(12px);
+  background: var(--sc-color-surface);
 }
 
 .identity {

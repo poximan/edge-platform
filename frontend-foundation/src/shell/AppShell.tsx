@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { useLayoutEffect, type ReactNode } from "react";
 
+import { applyServicoopTheme, SERVICOOP_THEME_STORAGE_KEY } from "../theme";
 import styles from "./AppShell.module.css";
 
 export interface AppShellLink {
@@ -15,6 +16,15 @@ export interface AppShellProps {
 }
 
 export function AppShell({ children, links = [], productName, sectionName = "Comunicaciones" }: AppShellProps) {
+  useLayoutEffect(() => {
+    const applyTheme = (event?: StorageEvent) => {
+      if (!event || event.key === SERVICOOP_THEME_STORAGE_KEY) applyServicoopTheme();
+    };
+    applyTheme();
+    window.addEventListener("storage", applyTheme);
+    return () => window.removeEventListener("storage", applyTheme);
+  }, []);
+
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
@@ -26,8 +36,7 @@ export function AppShell({ children, links = [], productName, sectionName = "Com
           {links.map((link) => (
             <a href={link.href} key={link.href}>{link.label}</a>
           ))}
-          <a href="/">Productos</a>
-          <a href="/logout">Salir</a>
+          <a href="/logout">Cerrar sesión</a>
         </nav>
       </header>
       {children}

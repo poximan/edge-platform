@@ -21,7 +21,7 @@ public|prefix|/chatcheto-geo/|geo-posicion:4500|strip|protected-deny|stream|-
 public|exact|/chatcheto-dashboard-api|redirect:/chatcheto-dashboard-api/|-|public|-|-
 public|prefix|/chatcheto-dashboard-api/|dashboard-service:4200|strip|protected-deny|stream|-
 public|exact|/moto-tester|redirect:/moto-tester/|-|public|-|-
-public|prefix|/moto-tester/|trasvase-tester:8080|strip|protected-redirect|stream|-
+public|prefix|/moto-tester/|trasvase-tester:8080|strip|public|stream|-
 public|exact|/repo|redirect:/repo/|-|public|-|-
 public|prefix|/repo/|artifact-repository:8080|preserve|public|static|-
 

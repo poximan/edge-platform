@@ -242,7 +242,7 @@
                 <div class="card">
                     <h3>Trasvase Tester</h3>
                     <p>Web de prueba y diagnostico Modbus/TCP para bombas de trasvase</p>
-                    <button class="secondary" type="button" onclick="showMotoTesterForm()">Abrir moto-tester</button>
+                    <button class="primary" type="button" onclick="window.location.href='/moto-tester/'">Abrir moto-tester</button>
                 </div>
             </div>
         </section>
@@ -286,19 +286,6 @@
             <button class="ghost" type="button" onclick="backToChoiceFromAlarmero()">Volver al inicio</button>
         </form>
     </div>
-    <div id="moto-tester-login" class="card hidden">
-        <h2>Acceso moto-tester</h2>
-        <p>Se requiere confirmar credenciales protegidas antes de abrir el tester.</p>
-        <form id="moto-tester-form">
-            <label for="moto-tester-user">Usuario</label>
-            <input id="moto-tester-user" name="user" type="text" autocomplete="username" required>
-            <label for="moto-tester-pass">Contrasena</label>
-            <input id="moto-tester-pass" name="pass" type="password" autocomplete="current-password" required>
-            <div class="error" id="moto-tester-error"></div>
-            <button class="secondary" type="submit">Abrir moto-tester</button>
-            <button class="ghost" type="button" onclick="backToChoiceFromMotoTester()">Volver al inicio</button>
-        </form>
-    </div>
 </div>
 <script>
 (function () {
@@ -312,9 +299,6 @@
     const alarmeroSection = document.getElementById("alarmero-login");
     const alarmeroForm = document.getElementById("alarmero-form");
     const alarmeroError = document.getElementById("alarmero-error");
-    const motoTesterSection = document.getElementById("moto-tester-login");
-    const motoTesterForm = document.getElementById("moto-tester-form");
-    const motoTesterError = document.getElementById("moto-tester-error");
     const themeButtons = document.querySelectorAll("[data-theme-choice]");
 
     function updateThemeButtons(theme) {
@@ -345,12 +329,10 @@
         protectedSection.classList.add("hidden");
         chatchetoSection.classList.add("hidden");
         alarmeroSection.classList.add("hidden");
-        motoTesterSection.classList.add("hidden");
         choiceSection.classList.remove("hidden");
         errorBox.textContent = "";
         chatchetoError.textContent = "";
         alarmeroError.textContent = "";
-        motoTesterError.textContent = "";
     };
 
     window.showAlarmeroForm = function () {
@@ -379,20 +361,6 @@
         chatchetoSection.classList.add("hidden");
         choiceSection.classList.remove("hidden");
         chatchetoError.textContent = "";
-    };
-
-    window.showMotoTesterForm = function () {
-        choiceSection.classList.add("hidden");
-        motoTesterSection.classList.remove("hidden");
-        motoTesterError.textContent = "";
-        motoTesterForm.reset();
-        document.getElementById("moto-tester-user").focus();
-    };
-
-    window.backToChoiceFromMotoTester = function () {
-        motoTesterSection.classList.add("hidden");
-        choiceSection.classList.remove("hidden");
-        motoTesterError.textContent = "";
     };
 
     window.enterSecure = async function () {
@@ -524,37 +492,6 @@
         }
     });
 
-    motoTesterForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
-        motoTesterError.textContent = "";
-        const user = (document.getElementById("moto-tester-user").value || "").trim();
-        const pass = document.getElementById("moto-tester-pass").value || "";
-        if (!user || !pass) {
-            motoTesterError.textContent = "Usuario y contrasena son requeridos.";
-            return;
-        }
-        try {
-            const response = await fetch("/mode/protected", {
-                method: "POST",
-                headers: {
-                    "X-Mode-User": user,
-                    "X-Mode-Pass": pass
-                },
-                credentials: "same-origin"
-            });
-            if (response.status === 204) {
-                window.location.href = "/moto-tester/";
-                return;
-            }
-            if (response.status === 403) {
-                motoTesterError.textContent = "Credenciales invalidas.";
-                return;
-            }
-            motoTesterError.textContent = "No se pudo validar el acceso.";
-        } catch (err) {
-            motoTesterError.textContent = "Error al contactar el router.";
-        }
-    });
 })();
 </script>
 </body>

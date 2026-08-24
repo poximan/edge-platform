@@ -39,7 +39,8 @@ scope|match|path|destination|uri_mode|access|profile|mirror
 
 - `scope`: `public` o Host interno del producto.
 - `match`: `exact` o `prefix`.
-- `destination`: servicio y puerto Docker.
+- `destination`: servicio y puerto Docker para HTTP, o
+  `https://host:puerto` para un upstream HTTPS de la LAN.
 - `uri_mode`: `preserve` conserva la ruta; `strip` quita el prefijo.
 - `access`: `public`, `protected-deny` o `protected-redirect`.
 - `profile`: `standard`, `stream`, `sse` o `static`.

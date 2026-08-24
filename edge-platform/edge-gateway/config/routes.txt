@@ -1,5 +1,6 @@
 # scope|match|path|destination|uri_mode|access|profile|mirror
-# destination usa host:puerto. Cada fila representa una unica regla.
+# destination usa host:puerto para HTTP o https://host:puerto para HTTPS.
+# Cada fila representa una unica regla.
 # Este archivo define ruteo HTTP, no reserva puertos. Los contratos TCP viven
 # en /ports.txt. Cada destino debe corresponder a un servicio o alias Docker
 # existente y a un service_port registrado.
@@ -22,6 +23,8 @@ public|exact|/chatcheto-dashboard-api|redirect:/chatcheto-dashboard-api/|-|publi
 public|prefix|/chatcheto-dashboard-api/|dashboard-service:4200|strip|protected-deny|stream|-
 public|exact|/moto-tester|redirect:/moto-tester/|-|public|-|-
 public|prefix|/moto-tester/|trasvase-tester:8080|strip|public|stream|-
+public|exact|/reporte|redirect:/reporte/|-|public|-|-
+public|prefix|/reporte/|https://10.10.9.250:443|preserve|public|standard|-
 public|exact|/repo|redirect:/repo/|-|public|-|-
 public|prefix|/repo/|artifact-repository:8080|preserve|public|static|-
 

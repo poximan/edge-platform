@@ -7,7 +7,11 @@ from pathlib import Path
 
 
 HOST_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$")
-TARGET_PATTERN = re.compile(r"^(?P<host>[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?):(?P<port>[0-9]{1,5})$")
+TARGET_PATTERN = re.compile(
+    r"^(?:(?P<scheme>https?)://)?"
+    r"(?P<host>[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?):"
+    r"(?P<port>[0-9]{1,5})$",
+)
 PATH_PATTERN = re.compile(r"^/[A-Za-z0-9._~/%:@+,-]*$")
 MIRROR_PATTERN = re.compile(
     r"^(?P<target>[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?:[0-9]{1,5})(?P<path>/[A-Za-z0-9._~/%:@+,-]*)$",
@@ -38,6 +42,10 @@ def validate_target(value: str, line_number: int) -> None:
     port = int(match.group("port"))
     if port < 1 or port > 65535:
         fail(line_number, f"puerto fuera de rango: {port}")
+
+
+def upstream_url(destination: str) -> str:
+    return destination if "://" in destination else f"http://{destination}"
 
 
 def parse_rules(path: Path) -> list[Rule]:
@@ -137,7 +145,17 @@ def render_proxy(rule: Rule, index: int) -> list[str]:
         body.append(f"mirror /__edge_mirror_{index};")
         body.append("mirror_request_body off;")
 
-    body.append(f"set $route_upstream_{index} http://{rule.destination};")
+    body.append(f"set $route_upstream_{index} {upstream_url(rule.destination)};")
+
+    if rule.destination.startswith("https://"):
+        # El certificado del equipo legado se valida operativamente en la LAN,
+        # pero no posee un SAN utilizable por Nginx para verificar el hostname.
+        body.extend(
+            [
+                "proxy_ssl_server_name off;",
+                "proxy_ssl_verify off;",
+            ],
+        )
 
     if rule.uri_mode == "strip":
         escaped_path = re.escape(rule.path)

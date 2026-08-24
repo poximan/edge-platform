@@ -98,7 +98,8 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 24px;
         }
-        .system-section[data-system="lechuza-server"] {
+        .system-section[data-system="lechuza-server"],
+        .system-section[data-system="chatcheto"] {
             grid-column: 1 / -1;
         }
         .system-section {
@@ -152,6 +153,12 @@
             background: var(--primary);
             color: var(--primary-text);
         }
+        .action-link {
+            box-sizing: border-box;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+        }
         .secondary {
             background: var(--accent);
             color: var(--accent-text);
@@ -190,7 +197,8 @@
             .sections {
                 grid-template-columns: 1fr;
             }
-            .system-section[data-system="lechuza-server"] {
+            .system-section[data-system="lechuza-server"],
+            .system-section[data-system="chatcheto"] {
                 grid-column: auto;
             }
         }
@@ -206,6 +214,26 @@
     <h1>sector comunicaciones</h1>
     <p class="subtitle">Selecciona el sistema de ingreso</p>
     <div id="mode-choice" class="sections">
+        <section class="system-section" data-system="reportespiolis" aria-labelledby="reportespiolis-title">
+            <h2 id="reportespiolis-title">reportespiolis</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Reporte horario</h3>
+                    <p>Reportes historicos de niveles, volumenes y estado de los sitios</p>
+                    <a class="primary action-link" href="/reporte/">Abrir reportespiolis</a>
+                </div>
+            </div>
+        </section>
+        <section class="system-section" data-system="moto-tester" aria-labelledby="moto-tester-title">
+            <h2 id="moto-tester-title">moto-tester</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Trasvase Tester</h3>
+                    <p>Web de prueba y diagnostico Modbus/TCP para bombas de trasvase</p>
+                    <button class="primary" type="button" onclick="window.location.href='/moto-tester/'">Abrir moto-tester</button>
+                </div>
+            </div>
+        </section>
         <section class="system-section" data-system="lechuza-server" aria-labelledby="lechuza-title">
             <h2 id="lechuza-title">lechuza-server</h2>
             <div class="cards">
@@ -233,16 +261,6 @@
                     <h3>Atendedor</h3>
                     <p>chatbot wp + broker + GIS</p>
                     <button class="secondary" type="button" onclick="showChatchetoForm()">Abrir chatcheto</button>
-                </div>
-            </div>
-        </section>
-        <section class="system-section" data-system="moto-tester" aria-labelledby="moto-tester-title">
-            <h2 id="moto-tester-title">moto-tester</h2>
-            <div class="cards">
-                <div class="card">
-                    <h3>Trasvase Tester</h3>
-                    <p>Web de prueba y diagnostico Modbus/TCP para bombas de trasvase</p>
-                    <button class="primary" type="button" onclick="window.location.href='/moto-tester/'">Abrir moto-tester</button>
                 </div>
             </div>
         </section>

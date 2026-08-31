@@ -6,6 +6,10 @@ Se consume como dependencia de build; no agrega una dependencia HTTP en runtime.
 La versión inicial contiene tokens, estilos base, botones, tarjetas, badges y el
 shell de navegación. Los componentes de dominio permanecen en cada producto.
 
+`UtcMinusThreePresenter` muestra estampas operativas en UTC−3 fijo y reloj de
+24 horas; nunca produce sufijos AM/PM. También puede representar instantes con
+precisión operativa como `DD/MM/YY, HH:mm:ss.mmm`.
+
 El landing guarda el tema elegido en `localStorage` con la clave
 `servicoop-theme`. `AppShell` aplica esa preferencia antes de pintar cada
 producto; los valores admitidos son `light` y `dark`.

@@ -13,8 +13,6 @@ services:
     build:
       context: .
       dockerfile: edge-platform/edge-gateway/Dockerfile
-    env_file:
-      - .env
     depends_on:
       artifact-repository:
         condition: service_healthy
@@ -39,8 +37,10 @@ services:
     build:
       context: .
       dockerfile: edge-platform/edge-auth/Dockerfile
-    env_file:
-      - .env
+    environment:
+      EDGE_PROTECTED_USER: ${EDGE_PROTECTED_USER}
+      EDGE_PROTECTED_PASS: ${EDGE_PROTECTED_PASS}
+      EDGE_SESSION_SECRET: ${EDGE_SESSION_SECRET}
     restart: unless-stopped
     networks:
       edge:

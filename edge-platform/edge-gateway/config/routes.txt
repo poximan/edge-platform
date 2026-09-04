@@ -5,8 +5,9 @@
 # en /ports.txt. Cada destino debe corresponder a un servicio o alias Docker
 # existente y a un service_port registrado.
 
-public|exact|/panelexemys|redirect:/panelexemys/|-|public|-|-
-public|prefix|/panelexemys/|panelexemys:8052|preserve|public|standard|-
+public|exact|/lechu|redirect:/lechu/|-|public|-|-
+public|prefix|/lechu/|lechu:8052|preserve|public|standard|-
+public|exact|/api/reles/observer|modbus-collector-service:8084|preserve|protected-deny|standard|-
 public|prefix|/api/|modbus-collector-service:8084|preserve|public|standard|-
 public|exact|/pve|redirect:/pve/|-|public|-|-
 public|prefix|/pve/|pve-service:8083|strip|public|standard|-

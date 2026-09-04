@@ -17,7 +17,7 @@ producto; los valores admitidos son `light` y `dark`.
 Consumidores actuales:
 
 - `products/comunic-mon/lechuza-server/alarmero-service/frontend`;
-- `products/comunic-mon/lechuza-server/panelexemys/frontend`;
+- `products/comunic-mon/lechuza-server/lechu/frontend`;
 - `products/moto-tester/trasvase-tester/frontend`.
 
 Este paquete no contiene vistas operativas. La metodología general está en `../../metodologia.txt`.

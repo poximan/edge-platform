@@ -15,19 +15,53 @@ services:
       dockerfile: edge-platform/edge-gateway/Dockerfile
     depends_on:
       artifact-repository:
-        condition: service_healthy
+        condition: service_started
       edge-auth:
-        condition: service_healthy
-    ports:
-      - "80:8081"
-      - "443:8443"
+        condition: service_started
     volumes:
       - ./edge-platform/edge-gateway/config/routes.txt:/etc/nginx/source/routes.txt:ro
+      - ./edge-platform/edge-gateway/config/nginx.conf:/etc/nginx/source/nginx.conf:ro
     restart: unless-stopped
     networks:
       edge:
         aliases:
           - servicoop-edge-gateway
+
+  tls-terminator:
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    logging: *default-logging
+    image: platform-tls-terminator:2.10.2
+    container_name: platform-tls-terminator
+    build:
+      context: .
+      dockerfile: tls-terminator/Dockerfile
+    depends_on:
+      edge-gateway:
+        condition: service_started
+    environment:
+      ACME_DOMAIN: ${ACME_DOMAIN:-comunicaciones.servicoop.com.ar}
+      EDGE_LAN_IP: ${EDGE_LAN_IP:?Completar IP LAN de acceso HTTPS}
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - caddy-data:/data
+      - ./tls-terminator/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-config:/config
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    networks:
+      edge:
+        aliases:
+          - servicoop-tls-terminator
 
   edge-auth:
     pids_limit: 256
@@ -41,6 +75,9 @@ services:
       EDGE_PROTECTED_USER: ${EDGE_PROTECTED_USER}
       EDGE_PROTECTED_PASS: ${EDGE_PROTECTED_PASS}
       EDGE_SESSION_SECRET: ${EDGE_SESSION_SECRET}
+      EDGE_LAYOUT_FILE: /data/portal-layout.json
+    volumes:
+      - edge-layout-data:/data
     restart: unless-stopped
     networks:
       edge:
@@ -63,6 +100,84 @@ services:
         aliases:
           - artifact-repository
 
+  docker-metrics-proxy:
+    pids_limit: 64
+    mem_limit: 64m
+    cpus: 0.10
+    logging: *default-logging
+    image: platform-docker-metrics-proxy:1.0.0
+    container_name: platform-docker-metrics-proxy
+    build:
+      context: .
+      dockerfile: docker-metrics-proxy/Dockerfile
+    group_add:
+      - "${DOCKER_SOCKET_GID:-989}"
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    networks:
+      metrics:
+        aliases:
+          - docker-metrics-proxy
+
+  resource-monitor:
+    pids_limit: 96
+    mem_limit: 128m
+    cpus: 0.25
+    logging: *default-logging
+    image: platform-resource-monitor:1.0.0
+    container_name: platform-resource-monitor
+    build:
+      context: .
+      dockerfile: resource-monitor/Dockerfile
+    depends_on:
+      docker-metrics-proxy:
+        condition: service_started
+    environment:
+      DOCKER_METRICS_URL: http://docker-metrics-proxy:2375
+      SAMPLE_INTERVAL_SECONDS: "60"
+      RETENTION_DAYS: "31"
+      RESOURCE_DB_PATH: /data/resources.sqlite3
+      MODBUS_DIAGNOSTICS_URL: ${MODBUS_DIAGNOSTICS_URL:?Completar endpoint del experto Modbus}
+    volumes:
+      - resource-monitor-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    networks:
+      metrics:
+      edge:
+        aliases:
+          - resource-monitor
+
 networks:
   edge:
     name: servicoop-edge-net
+  metrics:
+    name: platform-resource-net
+    internal: true
+
+volumes:
+  caddy-data:
+    name: platform-caddy-data
+  caddy-config:
+    name: platform-caddy-config
+  resource-monitor-data:
+    name: platform-resource-monitor-data
+  edge-layout-data:
+    name: platform-edge-layout-data

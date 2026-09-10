@@ -4,6 +4,8 @@ import hmac
 import json
 import os
 import re
+import tempfile
+from pathlib import Path
 
 from flask import Flask, Response, jsonify, request
 
@@ -22,6 +24,22 @@ PROTECTED_PASS = _required("EDGE_PROTECTED_PASS")
 SESSION_SECRET = _required("EDGE_SESSION_SECRET").encode("utf-8")
 COOKIE_NAME = _required("EDGE_SESSION_COOKIE_NAME")
 SESSION_TTL_SECONDS = int(_required("EDGE_SESSION_TTL_SECONDS"))
+LAYOUT_PATH = Path(_required("EDGE_LAYOUT_FILE"))
+SYSTEMS = {
+    "platform",
+    "reportespiolis",
+    "moto-tester",
+    "lechuza-server",
+    "chatcheto",
+}
+DEFAULT_LAYOUT = {
+    "rows": [
+        ["platform", "reportespiolis"],
+        ["moto-tester"],
+        ["lechuza-server"],
+        ["chatcheto"],
+    ]
+}
 
 if len(SESSION_SECRET) < 32:
     raise RuntimeError("EDGE_SESSION_SECRET debe contener al menos 32 caracteres")
@@ -29,6 +47,60 @@ if SESSION_TTL_SECONDS < 60:
     raise RuntimeError("EDGE_SESSION_TTL_SECONDS debe ser al menos 60")
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 4096
+
+
+def _validated_layout(value: object) -> dict[str, list[list[str]]]:
+    if not isinstance(value, dict) or set(value) != {"rows"}:
+        raise ValueError("El layout debe contener únicamente rows")
+    rows = value["rows"]
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("rows debe ser una lista no vacía")
+    normalized: list[list[str]] = []
+    flattened: list[str] = []
+    for row in rows:
+        if not isinstance(row, list) or not 1 <= len(row) <= 2:
+            raise ValueError("Cada fila debe contener una o dos secciones")
+        if not all(isinstance(system, str) and system in SYSTEMS for system in row):
+            raise ValueError("El layout contiene una sección desconocida")
+        normalized.append(list(row))
+        flattened.extend(row)
+    if len(flattened) != len(SYSTEMS) or set(flattened) != SYSTEMS:
+        raise ValueError("El layout debe contener cada sección exactamente una vez")
+    return {"rows": normalized}
+
+
+def _load_layout() -> dict[str, list[list[str]]]:
+    if not LAYOUT_PATH.exists():
+        return _validated_layout(DEFAULT_LAYOUT)
+    try:
+        return _validated_layout(json.loads(LAYOUT_PATH.read_text(encoding="utf-8")))
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        app.logger.error("No se pudo leer el layout persistido: %s", exc)
+        return _validated_layout(DEFAULT_LAYOUT)
+
+
+def _save_layout(layout: dict[str, list[list[str]]]) -> None:
+    LAYOUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=LAYOUT_PATH.parent,
+            prefix=f".{LAYOUT_PATH.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as destination:
+            temporary = Path(destination.name)
+            json.dump(layout, destination, ensure_ascii=False, indent=2)
+            destination.write("\n")
+            destination.flush()
+            os.fsync(destination.fileno())
+        os.replace(temporary, LAYOUT_PATH)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def _encode(value: bytes) -> str:
@@ -149,3 +221,21 @@ def verify():
     if user is None:
         return _mode_response(None, 401)
     return _mode_response(user)
+
+
+@app.get("/layout")
+def get_layout():
+    return jsonify(_load_layout())
+
+
+@app.put("/layout")
+def put_layout():
+    user = _validate_session(request.cookies.get(COOKIE_NAME))
+    if user is None:
+        return jsonify({"error": "Se requiere una sesión protegida"}), 401
+    try:
+        layout = _validated_layout(request.get_json(silent=True))
+        _save_layout(layout)
+    except (TypeError, ValueError) as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify(layout)

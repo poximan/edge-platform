@@ -1,0 +1,35 @@
+{
+    admin off
+    http_port 8080
+    https_port 8443
+    default_sni {$EDGE_LAN_IP}
+    skip_install_trust
+}
+
+http://:8082 {
+    respond /health 200
+}
+
+https://{$EDGE_LAN_IP} {
+    tls internal
+    reverse_proxy edge-gateway:8081 {
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-Host {host}
+    }
+}
+
+{$ACME_DOMAIN} {
+    tls {
+        issuer acme {
+            dir https://acme-v02.api.letsencrypt.org/directory
+            disable_http_challenge
+            alt_tlsalpn_port 8443
+        }
+    }
+    reverse_proxy edge-gateway:8081 {
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-Host {host}
+    }
+}

@@ -1,0 +1,121 @@
+.layout-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: -8px 0 24px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.layout-toolbar p {
+    margin: 0;
+}
+
+.layout-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.layout-reset,
+.drag-handle {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.layout-reset {
+    padding: 7px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.layout-status {
+    min-width: 9rem;
+    text-align: right;
+}
+
+.system-section {
+    position: relative;
+    transition: opacity 140ms ease, outline-color 140ms ease, transform 140ms ease;
+}
+
+.system-section[data-layout-width="half"] {
+    grid-column: span 6;
+}
+
+.system-section[data-layout-width="full"] {
+    grid-column: 1 / -1;
+}
+
+.system-section h2 {
+    padding-right: 76px;
+}
+
+.drag-handle {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 12px;
+    touch-action: none;
+    user-select: none;
+}
+.drag-handle:hover,
+.drag-handle:focus-visible,
+.layout-reset:hover,
+.layout-reset:focus-visible {
+    border-color: var(--primary);
+    color: var(--text);
+    outline: none;
+}
+
+.system-section.is-dragging {
+    opacity: 0.45;
+}
+
+.system-section.drop-share {
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.system-section.drop-before::before,
+.system-section.drop-after::after {
+    content: "";
+    position: absolute;
+    z-index: 3;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--primary);
+}
+
+.system-section.drop-before::before {
+    top: -14px;
+}
+
+.system-section.drop-after::after {
+    bottom: -14px;
+}
+
+@media (max-width: 720px) {
+    .system-section[data-layout-width] {
+        grid-column: 1 / -1;
+    }
+
+    .layout-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .layout-toolbar-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

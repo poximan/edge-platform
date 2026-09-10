@@ -28,6 +28,8 @@ public|exact|/reporte|redirect:/reporte/|-|public|-|-
 public|prefix|/reporte/|https://10.10.9.250:443|preserve|public|standard|-
 public|exact|/repo|redirect:/repo/|-|public|-|-
 public|prefix|/repo/|artifact-repository:8080|preserve|public|static|-
+public|exact|/recursos|redirect:/recursos/|-|public|-|-
+public|prefix|/recursos/|resource-monitor:8091|strip|protected-redirect|stream|-
 
 afondo.internal|exact|/health|afondo-central-server:8080|preserve|public|standard|-
 afondo.internal|exact|/api/admin/events|afondo-central-server:8080|strip|public|sse|-
@@ -46,3 +48,7 @@ floral.internal|prefix|/api/|floral-web-server:8080|preserve|public|stream|flora
 floral.internal|prefix|/assets/|floral-web-server:8080|preserve|public|static|floral-admin-dashboard:8084/internal/access-event
 floral.internal|exact|/admin|floral-admin-dashboard:8084|preserve|public|stream|-
 floral.internal|prefix|/admin/|floral-admin-dashboard:8084|preserve|public|stream|-
+
+public|prefix|/chatcheto-bkr-gis-api/|broker-gis:4900|strip|protected-deny|standard|-
+public|prefix|/chatcheto-bkr-movil-api/|broker-movil:4950|strip|protected-deny|standard|-
+public|prefix|/chatcheto-gis-api/|adapter-gis:4700|strip|protected-deny|standard|-

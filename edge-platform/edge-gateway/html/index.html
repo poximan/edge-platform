@@ -95,14 +95,11 @@
         }
         .sections {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(12, minmax(0, 1fr));
             gap: 24px;
         }
-        .system-section[data-system="lechuza-server"],
-        .system-section[data-system="chatcheto"] {
-            grid-column: 1 / -1;
-        }
         .system-section {
+            grid-column: 1 / -1;
             border: 1px solid var(--border);
             border-radius: 14px;
             padding: 20px;
@@ -197,12 +194,10 @@
             .sections {
                 grid-template-columns: 1fr;
             }
-            .system-section[data-system="lechuza-server"],
-            .system-section[data-system="chatcheto"] {
-                grid-column: auto;
-            }
         }
     </style>
+    <link rel="stylesheet" href="/layout.css">
+    <script defer src="/layout.js"></script>
 </head>
 <body>
 <div class="login-wrapper">
@@ -211,9 +206,26 @@
         <button data-theme-choice="light" type="button">Claro</button>
         <button data-theme-choice="dark" type="button">Oscuro</button>
     </div>
+    <div class="layout-toolbar">
+        <p>Arrastrá “Mover” hacia el centro de otra sección para compartir fila.</p>
+        <div class="layout-toolbar-actions">
+            <span id="layout-status" class="layout-status" role="status"></span>
+            <button id="layout-reset" class="layout-reset" type="button">Restablecer orden</button>
+        </div>
+    </div>
     <h1>sector comunicaciones</h1>
     <p class="subtitle">Selecciona el sistema de ingreso</p>
     <div id="mode-choice" class="sections">
+        <section class="system-section" data-system="platform" aria-labelledby="platform-title">
+            <h2 id="platform-title">platform</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Consumo de recursos</h3>
+                    <p>CPU, memoria y disco por producto y por contenedor</p>
+                    <button class="secondary" type="button" onclick="showProtectedForm('/recursos/')">Abrir monitor</button>
+                </div>
+            </div>
+        </section>
         <section class="system-section" data-system="reportespiolis" aria-labelledby="reportespiolis-title">
             <h2 id="reportespiolis-title">reportespiolis</h2>
             <div class="cards">
@@ -318,6 +330,7 @@
     const alarmeroForm = document.getElementById("alarmero-form");
     const alarmeroError = document.getElementById("alarmero-error");
     const themeButtons = document.querySelectorAll("[data-theme-choice]");
+    let protectedTarget = "/lechu/";
 
     function updateThemeButtons(theme) {
         themeButtons.forEach(function (button) {
@@ -335,7 +348,8 @@
     });
     updateThemeButtons(document.documentElement.dataset.scTheme);
 
-    window.showProtectedForm = function () {
+    window.showProtectedForm = function (target = "/lechu/") {
+        protectedTarget = target;
         choiceSection.classList.add("hidden");
         protectedSection.classList.remove("hidden");
         errorBox.textContent = "";
@@ -417,7 +431,7 @@
                 credentials: "same-origin"
             });
             if (response.status === 204) {
-                window.location.href = "/lechu/";
+                window.location.href = protectedTarget;
                 return;
             }
             if (response.status === 403) {

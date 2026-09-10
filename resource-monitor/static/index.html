@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recursos · Servicoop</title>
+  <script>
+    (function () {
+      const stored = localStorage.getItem("servicoop-theme");
+      document.documentElement.dataset.scTheme = stored === "light" || stored === "dark"
+        ? stored
+        : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    })();
+  </script>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="identity" href="/" aria-label="Volver al menú de productos">
+      <span>Comunicaciones</span>
+      <strong>platform</strong>
+    </a>
+    <nav aria-label="Navegación global">
+      <a href="/logout">Cerrar sesión</a>
+    </nav>
+  </header>
+  <main>
+    <header class="page-header">
+      <div>
+        <span class="eyebrow">OBSERVABILIDAD</span>
+        <h1>Consumo de recursos</h1>
+        <p>Estado del servidor y sus productos desplegados.</p>
+      </div>
+      <div class="controls">
+        <label for="window">Período</label>
+        <select id="window">
+          <option value="1">Última hora</option><option value="6">6 horas</option>
+          <option value="24" selected>24 horas</option><option value="168">7 días</option>
+          <option value="744">31 días</option>
+        </select>
+        <button id="refresh" type="button">Actualizar</button>
+      </div>
+    </header>
+    <section id="host" class="summary"></section>
+    <section class="panel">
+      <div class="panel-title"><div><span class="eyebrow">TENDENCIA</span><h2>CPU y memoria por producto</h2></div><span id="sampledAt" class="timestamp"></span></div>
+      <div class="charts">
+        <div class="chart-card" data-trend-chart="cpu">
+          <div class="chart-title"><h3>CPU acumulada</h3><div class="chart-controls"><button type="button" data-chart-mode="zoom">Zoom</button><button type="button" data-chart-mode="pan">Mover</button><button type="button" data-chart-reset>Restablecer</button></div></div>
+          <div class="chart-stage"><canvas id="cpuChart" tabindex="0" aria-label="Tendencia interactiva de CPU por producto"></canvas><div class="chart-tooltip" hidden></div></div>
+          <div class="chart-legend" aria-label="Productos representados"></div>
+          <p class="chart-help">Arrastrá para ampliar o mover · rueda para zoom · clic para fijar datos · doble clic para restablecer.</p>
+        </div>
+        <div class="chart-card" data-trend-chart="memory">
+          <div class="chart-title"><h3>Memoria</h3><div class="chart-controls"><button type="button" data-chart-mode="zoom">Zoom</button><button type="button" data-chart-mode="pan">Mover</button><button type="button" data-chart-reset>Restablecer</button></div></div>
+          <div class="chart-stage"><canvas id="memoryChart" tabindex="0" aria-label="Tendencia interactiva de memoria por producto"></canvas><div class="chart-tooltip" hidden></div></div>
+          <div class="chart-legend" aria-label="Productos representados"></div>
+          <p class="chart-help">Arrastrá para ampliar o mover · rueda para zoom · clic para fijar datos · doble clic para restablecer.</p>
+        </div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-title"><div><span class="eyebrow">DETALLE</span><h2>Contenedores activos</h2></div><input id="filter" type="search" placeholder="Filtrar producto o contenedor"></div>
+      <div class="table-wrap"><table><thead><tr><th><button class="sort-button" type="button" data-sort="product">Producto</button></th><th><button class="sort-button" type="button" data-sort="name">Contenedor</button></th><th><button class="sort-button" type="button" data-sort="cpu_percent">CPU</button></th><th><button class="sort-button" type="button" data-sort="memory_bytes">Memoria</button></th><th><button class="sort-button" type="button" data-sort="writable_bytes">Capa escribible</button></th><th><button class="sort-button" type="button" data-sort="block_total_bytes">E/S disco</button></th><th><button class="sort-button" type="button" data-sort="network_total_bytes">Red</button></th></tr></thead><tbody id="containers"></tbody></table></div>
+    </section>
+    <section class="panel">
+      <div class="panel-title"><div><span class="eyebrow">CANAL INDUSTRIAL</span><h2>Diagnóstico Modbus de Lechuza</h2></div><span id="modbus-sampled-at" class="timestamp"></span></div>
+      <p>Ocupación del canal durante los últimos 60 segundos. La cola muestra consultas ya solicitadas; las lecturas que dependan de sus respuestas se incorporan después.</p>
+      <div id="modbus-channels" class="modbus-grid"></div>
+      <p id="modbus-error" role="alert"></p>
+    </section>
+    <p id="error" role="alert"></p>
+  </main>
+  <script type="module" src="app.js"></script>
+  <script src="modbus.js"></script>
+</body>
+</html>

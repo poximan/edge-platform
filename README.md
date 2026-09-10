@@ -1,88 +1,76 @@
-# Plataforma compartida de Servicoop
+# platform
 
-Este repositorio contiene capacidades transversales sin dominio de producto.
-Existe un unico `docker-compose.yml`, porque los servicios de runtime se operan
-como un solo despliegue de plataforma.
+Plataforma compartida de Servicoop. El único despliegue es
+`docker-compose.yml`; no contiene lógica de producto.
 
-- `edge-platform/edge-gateway`: unico router HTTP/HTTPS del host.
-- `edge-platform/edge-auth`: emite y valida la sesion firmada del modo protegido.
-- `artifact-repository`: repositorio central de APK y metadata de versiones.
-- `frontend-foundation`: dependencia de build compartida por los frontends web.
+## Componentes
 
-## Ingreso publico
+| Componente | Responsabilidad | Runtime |
+|---|---|---|
+| `tls-terminator` | Terminación TLS y gestión automática de certificados | `80/443` |
+| `edge-platform/edge-gateway` | Autorización y ruteo HTTP declarativo | interno |
+| `edge-platform/edge-auth` | Sesión firmada y modo protegido | interno |
+| `artifact-repository` | APK y metadata verificable | `/repo/*` |
+| `frontend-foundation` | Componentes y estilos de build web | sin runtime |
 
-`comunicaciones.servicoop.com.ar` es administrado fuera de este workspace. El DNS apunta al router frontera y ese equipo reenvia el trafico `80/443` al host Docker administrado localmente. Este repositorio comienza su responsabilidad cuando la conexion llega al host.
+## Frontera
 
-```text
-comunicaciones.servicoop.com.ar
-  -> router frontera externo
-  -> host Docker:80/443
-  -> edge-gateway
-  -> servicio seleccionado por ruta
-```
-
-Si el router solo hace NAT o passthrough, el certificado publico debe terminar en `edge-gateway`. Si termina TLS, el certificado pertenece al router y debe existir un contrato explicito para el tramo hacia el host.
-
-El puerto `8443` pertenece exclusivamente al listener no privilegiado dentro del
-contenedor. El gateway normaliza el origen publico como HTTPS `443`, emite
-redirecciones relativas y nunca propaga `8443` a navegadores ni servicios.
-
-Los quick tunnels pertenecen a cada producto, no a la plataforma. Son conexiones salientes y no compiten con los puertos `80/443`. Los adaptadores de canal ingresan al listener interno `8080` con un Host de producto, por ejemplo `afondo.internal`.
-
-## Ruteo
-
-`edge-platform/edge-gateway/config/routes.txt` es la unica fuente de verdad. Formato:
+`edge-platform/edge-gateway/config/routes.txt` es la fuente única de rutas. Cada
+registro usa:
 
 ```text
 scope|match|path|destination|uri_mode|access|profile|mirror
 ```
 
-- `scope`: `public` o Host interno del producto.
-- `match`: `exact` o `prefix`.
-- `destination`: servicio y puerto Docker para HTTP, o
-  `https://host:puerto` para un upstream HTTPS de la LAN.
-- `uri_mode`: `preserve` conserva la ruta; `strip` quita el prefijo.
-- `access`: `public`, `protected-deny` o `protected-redirect`.
-- `profile`: `standard`, `stream`, `sse` o `static`.
-- `mirror`: `-` o destino interno de telemetria.
+Las rutas públicas/protegidas se autorizan mediante `edge-auth`; no se confía en
+cookies ni encabezados aportados por el cliente. `80/443` son los únicos puertos
+de frontera. Los upstreams Docker se alcanzan por nombre y puerto interno.
 
-Las filas invalidas o duplicadas abortan el inicio. Una redireccion usa `redirect:/ruta` como destino.
+## Red
 
-Las rutas publicas reciben `X-Edge-Mode: secure` o `protected` despues de validar la sesion. Las rutas protegidas usan `auth_request`; nunca confian en una cookie ni en un encabezado aportado directamente por el cliente. El inicio de sesion se limita por IP y la cookie es firmada, `Secure`, `HttpOnly` y `SameSite=Strict`.
+El Compose crea `servicoop-edge-net`. Los productos la declaran externa y deben
+desplegarse después de `platform`. Solo se conectan servicios publicados por el
+gateway. Los quick tunnels pertenecen a los productos y son conexiones salientes.
 
-## Red compartida
+## Artefactos
 
-Este Compose crea y administra `servicoop-edge-net`. Los productos la declaran `external: true`; por eso `platform` se despliega primero. No se debe crear la red manualmente ni declarar la plataforma como consumidor externo.
-
-Solo deben conectarse a esta red los servicios alcanzables por el gateway.
-
-## Repositorio de APK
-
-Estructura:
+`artifact-repository/volumes/repository/{app}/app.apk` se sirve como:
 
 ```text
-artifact-repository/volumes/repository/{aplicacion}/app.apk
+/repo/{app}/release
+/repo/{app}/app.apk
 ```
 
-Rutas:
+`release` expone versión, `versionCode`, tamaño, fecha y SHA-256 calculados del
+APK almacenado. El contenedor recibe el volumen en solo lectura.
 
-```text
-/repo/{aplicacion}/release
-/repo/{aplicacion}/app.apk
-```
+## Frontend
 
-`release` informa version, versionCode, tamano, fecha y SHA-256 extraidos del APK.
+`frontend-foundation` es una dependencia de build. Define tokens, shell,
+componentes comunes y presentación UTC−3 en formato de 24 horas. No expone
+puertos ni accede a APIs en runtime.
 
-## Fundacion frontend
+## Configuración
 
-`frontend-foundation` es la unica fuente de verdad para tokens visuales,
-estilos base, componentes globales y la barra de navegacion de los productos web.
-Las interfaces nuevas usan React, TypeScript estricto y Vite; los estilos propios
-de cada dominio usan CSS Modules y no duplican decisiones globales.
+Copiar `.env.example` a `.env` y completar valores obligatorios. Los secretos no
+se versionan; los archivos locales deben conservar permisos restrictivos.
 
-La fundacion se incorpora como dependencia durante el build. No es un servicio,
-no expone un puerto y no agrega acoplamiento HTTP en runtime.
+## TLS y rutas de operación
 
-## Configuracion
+`tls-terminator` obtiene y renueva automáticamente el certificado de
+`ACME_DOMAIN`. Mantiene abiertos los puertos 80 y 443 y emite mediante el desafío
+TLS-ALPN-01 por el puerto 443; si la autoridad certificadora no está disponible, conserva
+el proceso activo y reintenta sin bloquear el inicio de `edge-gateway`. Las claves
+permanecen en el volumen privado `caddy-data` y no se comparten con el gateway.
+Android conserva la validación TLS del sistema.
 
-Copiar `.env.example` como `.env` y completar las credenciales y un secreto aleatorio de al menos 32 caracteres. No se admiten variables obligatorias vacias ni secretos versionados.
+Las APIs `/chatcheto-bkr-gis-api/`, `/chatcheto-bkr-movil-api/` y
+`/chatcheto-gis-api/` se enrutan y protegen aquí. Atendedor sirve exclusivamente
+su distribución web. PostgreSQL y los servicios internos no publican puertos.
+
+Excepción de construcción: edge-gateway interpreta Python y genera configuración
+al iniciar a partir del archivo de rutas montado; no tiene dependencias Python
+ni compilación que requieran una etapa de build independiente. El resto de las
+imágenes con dependencias separa su instalación del runtime. Los paquetes del
+sistema instalados con apk/apt siguen los repositorios de la distribución fijada;
+no se declara reproducibilidad binaria de esos repositorios.

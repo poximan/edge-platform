@@ -207,10 +207,11 @@
         <button data-theme-choice="dark" type="button">Oscuro</button>
     </div>
     <div class="layout-toolbar">
-        <p>Arrastrá “Mover” hacia el centro de otra sección para compartir fila.</p>
+        <p>Habilitá la edición y arrastrá “Mover” hacia el centro de otra sección para compartir fila.</p>
         <div class="layout-toolbar-actions">
             <span id="layout-status" class="layout-status" role="status"></span>
-            <button id="layout-reset" class="layout-reset" type="button">Restablecer orden</button>
+            <button id="layout-edit" class="layout-edit" type="button">Editar disposición</button>
+            <button id="layout-reset" class="layout-reset" type="button" hidden>Restablecer orden</button>
         </div>
     </div>
     <h1>sector comunicaciones</h1>
@@ -331,6 +332,7 @@
     const alarmeroError = document.getElementById("alarmero-error");
     const themeButtons = document.querySelectorAll("[data-theme-choice]");
     let protectedTarget = "/lechu/";
+    let protectedSuccessAction = null;
 
     function updateThemeButtons(theme) {
         themeButtons.forEach(function (button) {
@@ -348,8 +350,9 @@
     });
     updateThemeButtons(document.documentElement.dataset.scTheme);
 
-    window.showProtectedForm = function (target = "/lechu/") {
+    window.showProtectedForm = function (target = "/lechu/", successAction = null) {
         protectedTarget = target;
+        protectedSuccessAction = typeof successAction === "function" ? successAction : null;
         choiceSection.classList.add("hidden");
         protectedSection.classList.remove("hidden");
         errorBox.textContent = "";
@@ -358,6 +361,7 @@
     };
 
     window.backToChoice = function () {
+        protectedSuccessAction = null;
         protectedSection.classList.add("hidden");
         chatchetoSection.classList.add("hidden");
         alarmeroSection.classList.add("hidden");
@@ -431,6 +435,13 @@
                 credentials: "same-origin"
             });
             if (response.status === 204) {
+                if (protectedSuccessAction) {
+                    const successAction = protectedSuccessAction;
+                    protectedSuccessAction = null;
+                    window.backToChoice();
+                    successAction();
+                    return;
+                }
                 window.location.href = protectedTarget;
                 return;
             }

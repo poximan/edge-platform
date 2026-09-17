@@ -18,6 +18,7 @@
     gap: 10px;
 }
 
+.layout-edit,
 .layout-reset,
 .drag-handle {
     border: 1px solid var(--border);
@@ -26,6 +27,7 @@
     cursor: pointer;
 }
 
+.layout-edit,
 .layout-reset {
     padding: 7px 12px;
     border-radius: 999px;
@@ -68,6 +70,8 @@
 }
 .drag-handle:hover,
 .drag-handle:focus-visible,
+.layout-edit:hover,
+.layout-edit:focus-visible,
 .layout-reset:hover,
 .layout-reset:focus-visible {
     border-color: var(--primary);

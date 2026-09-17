@@ -7,8 +7,12 @@
 
 public|exact|/lechu|redirect:/lechu/|-|public|-|-
 public|prefix|/lechu/|lechu:8052|preserve|public|standard|-
-public|exact|/api/reles/observer|modbus-collector-service:8084|preserve|protected-deny|standard|-
-public|prefix|/api/|modbus-collector-service:8084|preserve|public|standard|-
+public|exact|/api/reles/observer|micom-collector-service:8089|preserve|protected-deny|standard|-
+public|prefix|/api/grd/|grd-collector-service:8087|preserve|public|standard|-
+public|prefix|/api/ge/|generator-collector-service:8088|preserve|public|standard|-
+public|prefix|/api/reles/|micom-collector-service:8089|preserve|public|standard|-
+public|exact|/api/analizadores|janitza-collector-service:8095|preserve|public|standard|-
+public|prefix|/api/analizadores/|janitza-collector-service:8095|preserve|public|standard|-
 public|exact|/pve|redirect:/pve/|-|public|-|-
 public|prefix|/pve/|pve-service:8083|strip|public|standard|-
 public|prefix|/router/|modem-link-monitor:8086|strip|public|standard|-

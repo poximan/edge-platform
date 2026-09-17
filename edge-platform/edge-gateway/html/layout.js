@@ -10,6 +10,7 @@
         ]
     };
     const sectionsRoot = document.getElementById("mode-choice");
+    const editButton = document.getElementById("layout-edit");
     const resetButton = document.getElementById("layout-reset");
     const status = document.getElementById("layout-status");
     const sections = new Map(
@@ -20,6 +21,15 @@
     let draggedSystem = null;
     let dropTarget = null;
     let dropZone = null;
+    let editingEnabled = false;
+    const dragHandles = [];
+
+    function setEditingEnabled(enabled) {
+        editingEnabled = enabled;
+        editButton.hidden = enabled;
+        resetButton.hidden = !enabled;
+        dragHandles.forEach(function (handle) { handle.hidden = !enabled; });
+    }
 
     function validLayout(candidate) {
         if (!candidate || !Array.isArray(candidate.rows) || candidate.rows.length === 0) return false;
@@ -65,6 +75,7 @@
     }
 
     async function saveLayout() {
+        if (!editingEnabled) return;
         status.textContent = "Guardando…";
         try {
             const response = await fetch("/portal-layout", {
@@ -75,7 +86,8 @@
                 body: JSON.stringify(layout)
             });
             if (response.status === 401) {
-                status.textContent = "Iniciá sesión protegida para guardar";
+                setEditingEnabled(false);
+                status.textContent = "La sesión venció; habilitá nuevamente la edición";
                 return;
             }
             if (!response.ok) throw new Error("No se pudo guardar");
@@ -95,6 +107,18 @@
         } catch {
             applyLayout(defaultLayout);
             status.textContent = "Orden predeterminado";
+        }
+    }
+
+    async function loadEditingPermission() {
+        try {
+            const response = await fetch("/mode/session", {
+                credentials: "same-origin",
+                cache: "no-store"
+            });
+            setEditingEnabled(response.headers.get("X-Edge-Mode") === "protected");
+        } catch {
+            setEditingEnabled(false);
         }
     }
 
@@ -123,6 +147,7 @@
         handle.textContent = "Mover";
         handle.setAttribute("aria-label", "Mover sección " + system);
         handle.title = "Arrastrá para cambiar de fila o compartirla";
+        handle.hidden = true;
         handle.addEventListener("dragstart", function (event) {
             draggedSystem = system;
             section.classList.add("is-dragging");
@@ -136,6 +161,7 @@
             clearDropState();
         });
         section.appendChild(handle);
+        dragHandles.push(handle);
     });
 
     sectionsRoot.addEventListener("dragover", function (event) {
@@ -173,6 +199,15 @@
         void saveLayout();
     });
 
+    editButton.addEventListener("click", function () {
+        window.showProtectedForm("/", function () {
+            setEditingEnabled(true);
+            status.textContent = "Edición habilitada";
+        });
+    });
+
     applyLayout(defaultLayout);
+    setEditingEnabled(false);
     void loadLayout();
+    void loadEditingPermission();
 })();

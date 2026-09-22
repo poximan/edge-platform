@@ -92,6 +92,8 @@ services:
     build:
       context: .
       dockerfile: artifact-repository/Dockerfile
+    environment:
+      APK_UPDATE_MAX_OMISSIONS: ${APK_UPDATE_MAX_OMISSIONS}
     volumes:
       - ./artifact-repository/volumes/repository:/repository:ro
     restart: unless-stopped

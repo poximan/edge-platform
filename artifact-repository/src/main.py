@@ -21,6 +21,10 @@ from androguard.core.apk import APK
 
 APP_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
 REPOSITORY_ROOT = Path(os.environ.get("REPOSITORY_ROOT", "/repository")).resolve()
+CONTRACT_VERSION = 1
+UPDATE_MAX_OMISSIONS = int(os.environ["APK_UPDATE_MAX_OMISSIONS"])
+if UPDATE_MAX_OMISSIONS < 0:
+    raise RuntimeError("APK_UPDATE_MAX_OMISSIONS debe ser mayor o igual que cero")
 
 app = Flask(__name__)
 log_handler = logging.StreamHandler()
@@ -32,7 +36,7 @@ logging.basicConfig(level=logging.WARNING, handlers=[log_handler])
 class ReleaseMetadata:
     app_name: str
     app_version: str
-    version_code: str
+    version_code: int
     size_bytes: int
     content_hash: str
     modified_at: str
@@ -40,6 +44,7 @@ class ReleaseMetadata:
 
     def response(self) -> dict:
         return {
+            "contractVersion": CONTRACT_VERSION,
             "appName": self.app_name,
             "appVersion": self.app_version,
             "versionCode": self.version_code,
@@ -48,6 +53,7 @@ class ReleaseMetadata:
             "hashAlgorithm": "sha256",
             "contentHash": self.content_hash,
             "modifiedAt": self.modified_at,
+            "maxOmissions": UPDATE_MAX_OMISSIONS,
         }
 
 
@@ -71,6 +77,9 @@ class MetadataCache:
                 raise RuntimeError("El APK no declara versionName")
             if version_code is None or not str(version_code).strip():
                 raise RuntimeError("El APK no declara versionCode")
+            parsed_version_code = int(str(version_code).strip())
+            if parsed_version_code <= 0:
+                raise RuntimeError("El APK declara un versionCode invalido")
 
             digest = hashlib.sha256()
             with apk_path.open("rb") as apk_file:
@@ -80,7 +89,7 @@ class MetadataCache:
             metadata = ReleaseMetadata(
                 app_name=app_name,
                 app_version=app_version.strip(),
-                version_code=str(version_code).strip(),
+                version_code=parsed_version_code,
                 size_bytes=stat.st_size,
                 content_hash=digest.hexdigest(),
                 modified_at=time_provider.utc_iso_from_epoch(stat.st_mtime),

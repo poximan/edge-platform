@@ -76,8 +76,7 @@ def _load_layout() -> dict[str, list[list[str]]]:
     try:
         return _validated_layout(json.loads(LAYOUT_PATH.read_text(encoding="utf-8")))
     except (OSError, json.JSONDecodeError, ValueError) as exc:
-        app.logger.error("No se pudo leer el layout persistido: %s", exc)
-        return _validated_layout(DEFAULT_LAYOUT)
+        raise RuntimeError(f"No se pudo leer el layout persistido: {exc}") from exc
 
 
 def _save_layout(layout: dict[str, list[list[str]]]) -> None:

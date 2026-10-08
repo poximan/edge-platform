@@ -57,8 +57,8 @@ export class ResourceTrendChart {
     this.setMode("zoom");
   }
 
-  setRows(rows) {
-    const wasFull = this.isFullView();
+  setRows(rows, resetView = false) {
+    const wasFull = resetView || this.isFullView();
     this.rows = rows
       .filter(row => Number.isFinite(Number(row.sampled_at)) && Number.isFinite(Number(row[this.field])))
       .map(row => ({ ...row, sampled_at: Number(row.sampled_at), [this.field]: Number(row[this.field]) }))
@@ -105,8 +105,18 @@ export class ResourceTrendChart {
 
   reset() {
     this.viewRange = [...this.fullRange];
-    this.clearHover();
+    this.pinned = false;
+    this.hoverTime = null;
+    this.tooltip.hidden = true;
     this.draw();
+    const button = this.root.querySelector("[data-chart-reset]");
+    button.textContent = "Restablecido";
+    button.dataset.confirmed = "true";
+    clearTimeout(this.resetFeedbackTimer);
+    this.resetFeedbackTimer = setTimeout(() => {
+      button.textContent = "Restablecer";
+      delete button.dataset.confirmed;
+    }, 1200);
   }
 
   geometry() {

@@ -3,6 +3,13 @@ import { ResourceTrendChart } from "./trend-chart.js";
 const state = {
   snapshot: null,
   history: null,
+  historyByHours: new Map(),
+  appliedHours: null,
+  historyController: null,
+  historyRequestId: 0,
+  historyPending: false,
+  snapshotController: null,
+  snapshotPending: false,
   sort: { key: "memory_bytes", direction: "desc" },
 };
 
@@ -122,31 +129,110 @@ const charts = [
   new ResourceTrendChart(document.querySelector('[data-trend-chart="memory"]'), "memory_bytes", bytes),
 ];
 
-function renderCharts() {
-  for (const chart of charts) chart.setRows(state.history.products);
+function renderCharts(resetView = false) {
+  for (const chart of charts) chart.setRows(state.history.products, resetView);
 }
 
-async function load() {
-  document.querySelector("#error").textContent = "";
+const periodSelect = document.querySelector("#window");
+const historyStatus = document.querySelector("#history-status");
+
+function periodName(hours) {
+  return periodSelect.querySelector(`option[value="${hours}"]`)?.textContent || `${hours} horas`;
+}
+
+function showHistory(history, hours) {
+  const changedWindow = state.appliedHours !== hours;
+  state.history = history;
+  state.appliedHours = hours;
+  renderCharts(changedWindow);
+}
+
+function setHistoryStatus(message, status) {
+  if (historyStatus.textContent !== message) historyStatus.textContent = message;
+  historyStatus.dataset.status = status;
+}
+
+async function loadSnapshot(automatic = false) {
+  if (automatic && state.snapshotPending) return;
+  state.snapshotController?.abort();
+  const controller = new AbortController();
+  state.snapshotController = controller;
+  state.snapshotPending = true;
   try {
-    const hours = document.querySelector("#window").value;
-    const [snapshotResponse, historyResponse] = await Promise.all([
-      fetch("api/snapshot", { cache: "no-store" }),
-      fetch(`api/history?hours=${hours}`, { cache: "no-store" }),
-    ]);
-    if (!snapshotResponse.ok || !historyResponse.ok)
-      throw new Error("El monitor todavía no tiene datos disponibles");
-    state.snapshot = await snapshotResponse.json();
-    state.history = await historyResponse.json();
+    const response = await fetch("api/snapshot", {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`No se pudo leer la muestra actual (HTTP ${response.status})`);
+    const snapshot = await response.json();
+    if (!snapshot || !snapshot.host || !Array.isArray(snapshot.containers))
+      throw new Error("La muestra actual tiene un formato inválido");
+    if (controller.signal.aborted) return;
+    state.snapshot = snapshot;
     renderSnapshot();
-    renderCharts();
+    document.querySelector("#error").textContent = "";
   } catch (error) {
-    document.querySelector("#error").textContent = error.message;
+    if (!controller.signal.aborted) document.querySelector("#error").textContent = error.message;
+  } finally {
+    if (state.snapshotController === controller) {
+      state.snapshotController = null;
+      state.snapshotPending = false;
+    }
   }
 }
 
-document.querySelector("#refresh").addEventListener("click", load);
-document.querySelector("#window").addEventListener("change", load);
+async function loadHistory(automatic = false) {
+  if (automatic && state.historyPending) return;
+  const hours = periodSelect.value;
+  state.historyController?.abort();
+  const controller = new AbortController();
+  const requestId = ++state.historyRequestId;
+  state.historyController = controller;
+  state.historyPending = true;
+  if (!automatic) periodSelect.setAttribute("aria-busy", "true");
+
+  try {
+    // Start the request before redrawing cached charts, without waiting for polling.
+    const pendingResponse = fetch(`api/history?hours=${hours}&include_host=0`, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    const cached = state.historyByHours.get(hours);
+    if (cached && state.appliedHours !== hours) showHistory(cached, hours);
+    if (!automatic) {
+      setHistoryStatus(
+        cached
+          ? `Mostrando ${periodName(hours)}. Actualizando datos…`
+          : `Cargando ${periodName(hours)}…${state.appliedHours ? ` Siguen visibles ${periodName(state.appliedHours)}.` : ""}`,
+        "loading",
+      );
+    }
+    const response = await pendingResponse;
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const history = await response.json();
+    if (!history || Number(history.hours) !== Number(hours)
+        || !Array.isArray(history.products) || !Array.isArray(history.host))
+      throw new Error("El historial tiene un formato inválido");
+    if (requestId !== state.historyRequestId) return;
+    state.historyByHours.set(hours, history);
+    showHistory(history, hours);
+    setHistoryStatus(`Mostrando ${periodName(hours)} · ${history.products.length} puntos por producto.`, "ready");
+  } catch (error) {
+    if (controller.signal.aborted || requestId !== state.historyRequestId) return;
+    const visible = state.appliedHours
+      ? ` Se mantienen visibles ${periodName(state.appliedHours)}.`
+      : "";
+    setHistoryStatus(`No se pudo cargar ${periodName(hours)} (${error.message}).${visible}`, "error");
+  } finally {
+    if (requestId === state.historyRequestId) {
+      state.historyController = null;
+      state.historyPending = false;
+      periodSelect.removeAttribute("aria-busy");
+    }
+  }
+}
+
+periodSelect.addEventListener("change", () => void loadHistory());
 document.querySelector("#filter").addEventListener(
   "input",
   () => state.snapshot && renderTable(),
@@ -167,5 +253,9 @@ window.addEventListener("storage", event => {
   document.documentElement.dataset.scTheme = stored === "light" ? "light" : "dark";
   if (state.history) renderCharts();
 });
-load();
-setInterval(load, 30_000);
+void loadHistory();
+void loadSnapshot();
+setInterval(() => {
+  void loadSnapshot(true);
+  void loadHistory(true);
+}, 30_000);

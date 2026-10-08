@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from .collector import ResourceCollector
+from .history_service import ResourceHistoryService
 from .docker_client import DockerMetricsClient
 from .storage import MetricsStorage
 from .modbus_client import ModbusDiagnosticsClient
@@ -28,6 +29,7 @@ storage = MetricsStorage(
     os.environ.get("RESOURCE_DB_PATH", "/data/resources.sqlite3"),
     required_int("RETENTION_DAYS", 1, 366),
 )
+history_service = ResourceHistoryService(storage)
 collector = ResourceCollector(
     DockerMetricsClient(os.environ.get("DOCKER_METRICS_URL", "http://docker-metrics-proxy:2375")),
     storage,
@@ -85,7 +87,11 @@ class Handler(BaseHTTPRequestHandler):
             if product not in {None, "lechuza-server", "chatcheto", "moto-tester", "platform", "otros"}:
                 self.json_response(400, {"error": "product_invalido"})
                 return
-            self.json_response(200, storage.history(hours, product))
+            include_host = query.get("include_host", ["1"])[0]
+            if include_host not in {"0", "1"}:
+                self.json_response(400, {"error": "include_host_invalido"})
+                return
+            self.json_response(200, history_service.get(hours, product, include_host == "1"))
             return
 
         files = {

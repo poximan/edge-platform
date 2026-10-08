@@ -50,6 +50,18 @@ APK almacenado. El contenedor recibe el volumen en solo lectura.
 componentes comunes y presentación UTC−3 en formato de 24 horas. No expone
 puertos ni accede a APIs en runtime.
 
+## Observabilidad de recursos
+
+`resource-monitor/src/collector.py` recolecta las métricas Docker en segundo plano
+cada 60 segundos. `storage.py` conserva las muestras de contenedor y host y una
+proyección por producto y muestra; al iniciar migra una sola vez las muestras
+anteriores sin eliminar el histórico. `history_service.py` conserva brevemente
+las consultas repetidas de cada ventana y `main.py` expone el contrato HTTP.
+La interfaz de `static/app.js` consulta el snapshot y el histórico por separado,
+omite la serie histórica del host que no dibuja, cancela respuestas de períodos
+anteriores y muestra cuál ventana está cargando o aplicada. Los gráficos viven
+en `static/trend-chart.js`.
+
 ## Configuración
 
 Copiar `.env.example` a `.env` y completar valores obligatorios. Los secretos no

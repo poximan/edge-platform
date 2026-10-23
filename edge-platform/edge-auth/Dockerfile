@@ -11,7 +11,7 @@ ARG APP_GID=1000
 
 RUN groupadd --gid "${APP_GID}" appgroup \
     && useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --shell /bin/sh appuser \
-    && install -d -o "${APP_UID}" -g "${APP_GID}" /app /data
+    && install -d -o "${APP_UID}" -g "${APP_GID}" /app
 
 WORKDIR /app
 

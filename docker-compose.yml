@@ -75,9 +75,6 @@ services:
       EDGE_PROTECTED_USER: ${EDGE_PROTECTED_USER}
       EDGE_PROTECTED_PASS: ${EDGE_PROTECTED_PASS}
       EDGE_SESSION_SECRET: ${EDGE_SESSION_SECRET}
-      EDGE_LAYOUT_FILE: /data/portal-layout.json
-    volumes:
-      - edge-layout-data:/data
     restart: unless-stopped
     networks:
       edge:
@@ -181,5 +178,3 @@ volumes:
     name: platform-caddy-config
   resource-monitor-data:
     name: platform-resource-monitor-data
-  edge-layout-data:
-    name: platform-edge-layout-data

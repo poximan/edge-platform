@@ -1,5 +1,7 @@
 export { AppShell } from "./shell/AppShell";
 export type { AppShellLink, AppShellProps } from "./shell/AppShell";
+export { StartupSplash } from "./startup/StartupSplash";
+export type { StartupSplashProps } from "./startup/StartupSplash";
 export { Button } from "./components/Button";
 export type { ButtonProps } from "./components/Button";
 export { Card } from "./components/Card";

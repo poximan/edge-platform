@@ -1,0 +1,59 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  background: radial-gradient(ellipse at center, #202327 0%, #090b0d 75%);
+  color: #f5f7fa;
+}
+.content {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  width: min(92vw, 760px);
+  padding: 2rem 0;
+  perspective: 1000px;
+}
+.logo {
+  width: min(62vw, 340px, 48dvh);
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 22px #0008);
+  animation: flight 3s ease-in-out infinite;
+}
+.name {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  letter-spacing: 0.04em;
+}
+.message {
+  color: #c0c7d1;
+}
+.progress {
+  width: 8rem;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #ffffff26;
+}
+.progress::after {
+  content: "";
+  display: block;
+  width: 50%;
+  height: 100%;
+  background: #f5f7fa;
+  animation: progress 1.2s ease-in-out infinite alternate;
+}
+@keyframes flight {
+  0%, 100% { transform: translateZ(-70px) scale(0.96); opacity: 0.85; }
+  50% { transform: translateZ(45px) scale(1.02); opacity: 1; }
+}
+@keyframes progress {
+  from { transform: translateX(-30%); }
+  to { transform: translateX(130%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo, .progress::after { animation: none; }
+}

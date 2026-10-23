@@ -34,6 +34,10 @@ public|exact|/repo|redirect:/repo/|-|public|-|-
 public|prefix|/repo/|artifact-repository:8080|preserve|public|static|-
 public|exact|/recursos|redirect:/recursos/|-|public|-|-
 public|prefix|/recursos/|resource-monitor:8091|strip|protected-redirect|stream|-
+public|exact|/kite-cat|redirect:/kite-cat/|-|public|-|-
+public|exact|/kite-cat/logo.png|kite-cat-web:8080|preserve|public|static|-
+public|prefix|/kite-cat/api/|kite-cat-web:8080|preserve|protected-deny|standard|-
+public|prefix|/kite-cat/|kite-cat-web:8080|preserve|protected-redirect|static|-
 
 afondo.internal|exact|/health|afondo-central-server:8080|preserve|public|standard|-
 afondo.internal|exact|/api/admin/events|afondo-central-server:8080|strip|public|sse|-

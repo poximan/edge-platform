@@ -113,9 +113,11 @@
         }
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
             gap: 16px;
         }
+        .product-title { display: flex; align-items: center; gap: 12px; }
+        .product-logo { width: 72px; height: 72px; object-fit: contain; border-radius: 10px; }
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -197,7 +199,8 @@
         }
     </style>
     <link rel="stylesheet" href="/layout.css">
-    <script defer src="/layout.js"></script>
+    <link rel="stylesheet" href="/product-tiles.css">
+    <script type="module" src="/layout.js"></script>
 </head>
 <body>
 <div class="login-wrapper">
@@ -207,7 +210,7 @@
         <button data-theme-choice="dark" type="button">Oscuro</button>
     </div>
     <div class="layout-toolbar">
-        <p>Habilitá la edición y arrastrá “Mover” hacia el centro de otra sección para compartir fila.</p>
+        <p>Acomodá hasta tres productos por fila. Arrastrá “Mover” o pulsalo para elegir la posición. Se guarda en este navegador.</p>
         <div class="layout-toolbar-actions">
             <span id="layout-status" class="layout-status" role="status"></span>
             <button id="layout-edit" class="layout-edit" type="button">Editar disposición</button>
@@ -220,61 +223,79 @@
         <section class="system-section" data-system="platform" aria-labelledby="platform-title">
             <h2 id="platform-title">platform</h2>
             <div class="cards">
-                <div class="card">
-                    <h3>Consumo de recursos</h3>
-                    <p>CPU, memoria y disco por producto y por contenedor</p>
-                    <button class="secondary" type="button" onclick="showProtectedForm('/recursos/')">Abrir monitor</button>
-                </div>
+                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm('/recursos/')" aria-label="Abrir monitor de recursos">
+                    <span class="tile-face">
+                        <span class="tile-title">Consumo de recursos</span>
+                        <span class="tile-description">CPU, memoria y disco por producto y por contenedor</span>
+                    </span>
+                </button>
             </div>
         </section>
         <section class="system-section" data-system="reportespiolis" aria-labelledby="reportespiolis-title">
             <h2 id="reportespiolis-title">reportespiolis</h2>
             <div class="cards">
-                <div class="card">
-                    <h3>Reporte horario</h3>
-                    <p>Reportes historicos de niveles, volumenes y estado de los sitios</p>
-                    <a class="primary action-link" href="/reporte/">Abrir reportespiolis</a>
-                </div>
+                <a class="card product-tile" data-product-tile href="/reporte/" draggable="false" aria-label="Abrir reportespiolis">
+                    <span class="tile-face">
+                        <span class="tile-title">Reporte horario</span>
+                        <span class="tile-description">Reportes historicos de niveles, volumenes y estado de los sitios</span>
+                    </span>
+                </a>
             </div>
         </section>
         <section class="system-section" data-system="moto-tester" aria-labelledby="moto-tester-title">
-            <h2 id="moto-tester-title">moto-tester</h2>
+            <h2 id="moto-tester-title" class="product-title"><img class="product-logo" src="/moto-tester/assets/trasvase.png" alt="" width="72" height="72" draggable="false">moto-tester</h2>
             <div class="cards">
-                <div class="card">
-                    <h3>Trasvase Tester</h3>
-                    <p>Web de prueba y diagnostico Modbus/TCP para bombas de trasvase</p>
-                    <button class="primary" type="button" onclick="window.location.href='/moto-tester/'">Abrir moto-tester</button>
-                </div>
+                <a class="card product-tile" data-product-tile href="/moto-tester/" draggable="false" aria-label="Abrir moto-tester">
+                    <span class="tile-face">
+                        <span class="tile-title">Trasvase Tester</span>
+                        <span class="tile-description">Web de prueba y diagnostico Modbus/TCP para bombas de trasvase</span>
+                    </span>
+                </a>
             </div>
         </section>
         <section class="system-section" data-system="lechuza-server" aria-labelledby="lechuza-title">
-            <h2 id="lechuza-title">lechuza-server</h2>
+            <h2 id="lechuza-title" class="product-title"><img class="product-logo" src="/lechu/icono.png" alt="" width="72" height="72">lechuza-server</h2>
             <div class="cards">
-                <div class="card">
-                    <h3>Modo seguro</h3>
-                    <p>Version reducida de libre acceso, no se exponen datos sensibles</p>
-                    <button class="primary" type="button" onclick="enterSecure()">Entrar modo seguro</button>
-                </div>
-                <div class="card">
-                    <h3>Modo protegido</h3>
-                    <p>Requiere permisos para acceder a toda la informacion</p>
-                    <button class="secondary" type="button" onclick="showProtectedForm()">Continuar a autenticacion</button>
-                </div>
-                <div class="card">
-                    <h3>Alarmero</h3>
-                    <p>Incidencias activas, historial, despachos y tiempos de despeje</p>
-                    <button class="secondary" type="button" onclick="showAlarmeroForm()">Abrir alarmero</button>
-                </div>
+                <button class="card product-tile" data-product-tile type="button" onclick="enterSecure()" aria-label="Entrar a lechuza-server en modo seguro">
+                    <span class="tile-face">
+                        <span class="tile-title">Modo seguro</span>
+                        <span class="tile-description">Version reducida de libre acceso, no se exponen datos sensibles</span>
+                    </span>
+                </button>
+                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm()" aria-label="Entrar a lechuza-server en modo protegido">
+                    <span class="tile-face">
+                        <span class="tile-title">Modo protegido</span>
+                        <span class="tile-description">Requiere permisos para acceder a toda la informacion</span>
+                    </span>
+                </button>
+                <button class="card product-tile" data-product-tile type="button" onclick="showAlarmeroForm()" aria-label="Abrir alarmero">
+                    <span class="tile-face">
+                        <span class="tile-title">Alarmero</span>
+                        <span class="tile-description">Incidencias activas, historial, despachos y tiempos de despeje</span>
+                    </span>
+                </button>
+            </div>
+        </section>
+        <section class="system-section" data-system="kite-cat" aria-labelledby="kite-cat-title">
+            <h2 id="kite-cat-title" class="product-title"><img class="product-logo" src="/kite-cat/logo.png" alt="" width="72" height="72">kite-cat</h2>
+            <div class="cards">
+                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm('/kite-cat/')" aria-label="Abrir kite-cat">
+                    <span class="tile-face">
+                        <span class="tile-title">Inventario de SIM</span>
+                        <span class="tile-description">ICC, identificación, estado, número de línea y consumo mensual de datos</span>
+                    </span>
+                </button>
             </div>
         </section>
         <section class="system-section" data-system="chatcheto" aria-labelledby="chatcheto-title">
             <h2 id="chatcheto-title">chatcheto</h2>
             <div class="cards">
-                <div class="card">
-                    <h3>Atendedor</h3>
-                    <p>chatbot wp + broker + GIS</p>
-                    <button class="secondary" type="button" onclick="showChatchetoForm()">Abrir chatcheto</button>
-                </div>
+                <button class="card product-tile" data-product-tile type="button" onclick="showChatchetoForm()" aria-label="Abrir chatcheto">
+                    <span class="tile-face">
+                        <span class="tile-title">Atendedor</span>
+                        <span class="tile-description">chatbot wp + broker + GIS</span>
+                    </span>
+                </button>
             </div>
         </section>
     </div>
@@ -332,7 +353,6 @@
     const alarmeroError = document.getElementById("alarmero-error");
     const themeButtons = document.querySelectorAll("[data-theme-choice]");
     let protectedTarget = "/lechu/";
-    let protectedSuccessAction = null;
 
     function updateThemeButtons(theme) {
         themeButtons.forEach(function (button) {
@@ -350,9 +370,8 @@
     });
     updateThemeButtons(document.documentElement.dataset.scTheme);
 
-    window.showProtectedForm = function (target = "/lechu/", successAction = null) {
+    window.showProtectedForm = function (target = "/lechu/") {
         protectedTarget = target;
-        protectedSuccessAction = typeof successAction === "function" ? successAction : null;
         choiceSection.classList.add("hidden");
         protectedSection.classList.remove("hidden");
         errorBox.textContent = "";
@@ -361,7 +380,6 @@
     };
 
     window.backToChoice = function () {
-        protectedSuccessAction = null;
         protectedSection.classList.add("hidden");
         chatchetoSection.classList.add("hidden");
         alarmeroSection.classList.add("hidden");
@@ -435,13 +453,6 @@
                 credentials: "same-origin"
             });
             if (response.status === 204) {
-                if (protectedSuccessAction) {
-                    const successAction = protectedSuccessAction;
-                    protectedSuccessAction = null;
-                    window.backToChoice();
-                    successAction();
-                    return;
-                }
                 window.location.href = protectedTarget;
                 return;
             }

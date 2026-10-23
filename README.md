@@ -26,6 +26,37 @@ Las rutas públicas/protegidas se autorizan mediante `edge-auth`; no se confía 
 cookies ni encabezados aportados por el cliente. `80/443` son los únicos puertos
 de frontera. Los upstreams Docker se alcanzan por nombre y puerto interno.
 
+`/kite-cat/` publica el inventario de SIM del producto `products/kite-cat` con
+autenticación protegida obligatoria. Su API `/kite-cat/api/` deniega solicitudes
+sin sesión; la página redirige al landing para ingresar. La tarjeta del catálogo
+usa el formulario protegido común.
+
+La disposición del landing se puede editar sin autenticarse, con arrastre o
+mediante «Mover». Admite de uno a tres productos por fila; en pantallas de hasta
+720 px se apilan respetando el orden elegido. `layout-model.js` valida las filas
+y la cookie `servicoop_portal_layout` (versión 1, duración de un año, SameSite=Lax
+y Secure en HTTPS). Cada navegador conserva su preferencia; no existe un orden
+compartido en edge-auth ni un endpoint para persistirlo en el servidor. La
+cookie no concede permisos para entrar a servicios protegidos.
+
+Las ocho tarjetas de acceso son ahora controles completos: botones nativos
+para accesos con autenticación y enlaces nativos para accesos directos. No hay
+controles «Abrir» dentro de las tarjetas. `product-tiles.js` valida la secuencia
+de pulsación y liberación sobre la misma tarjeta; cancela al soltar afuera,
+perder foco, cancelar el puntero o pulsar Escape. Enter y Espacio activan al
+soltar la tecla; se conserva la activación semántica de lectores de pantalla.
+
+`product-tiles.css` representa una tecla elevada que baja al presionar, con
+el área de interacción fija para que el movimiento visual no cambie el blanco.
+Respeta movimiento reducido y los temas claro/oscuro. Los controles de Mover
+siguen separados, por lo que arrastrar y guardar la disposición no abre productos.
+El encabezado de moto-tester muestra `/moto-tester/assets/trasvase.png`, el mismo
+PNG público usado por su splash. No se modifican permisos ni rutas de productos.
+
+La prueba `edge-platform/edge-gateway/tests/product-tiles.browser.mjs` cubre
+mouse, teclado, cancelaciones, tacto, icono y reordenamiento con cookie. Simula
+la autenticación y las páginas de destino para no operar los servicios reales.
+
 ## Red
 
 El Compose crea `servicoop-edge-net`. Los productos la declaran externa y deben

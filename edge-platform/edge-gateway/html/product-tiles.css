@@ -23,8 +23,7 @@
     flex: 1;
     flex-direction: column;
     width: 100%;
-    min-height: 188px;
-    padding: 20px;
+    padding: var(--sc-card-padding);
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--surface);

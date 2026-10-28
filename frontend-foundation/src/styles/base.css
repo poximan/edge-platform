@@ -1,4 +1,6 @@
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -32,6 +34,18 @@ textarea {
 
 a {
   color: inherit;
+}
+
+/* El margen exterior pertenece a la pagina; el relleno interior, al panel. */
+.sc-page {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--sc-page-max-width, var(--sc-content-width));
+  margin-inline: auto;
+  padding-block: var(--sc-page-padding-block);
+  padding-inline:
+    max(var(--sc-page-padding-inline), env(safe-area-inset-left))
+    max(var(--sc-page-padding-inline), env(safe-area-inset-right));
 }
 
 :focus-visible {

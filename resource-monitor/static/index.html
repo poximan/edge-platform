@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Recursos · Servicoop</title>
+  <title>Métricas server · Servicoop</title>
   <script>
     (function () {
       const stored = localStorage.getItem("servicoop-theme");
@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="base.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="clients.css">
 </head>
 <body>
   <header class="app-header">
@@ -26,11 +27,18 @@
       <a href="/logout">Cerrar sesión</a>
     </nav>
   </header>
-  <main>
+  <main class="sc-page">
+    <header class="page-header"><div><span class="eyebrow">PLATFORM</span><h1>Métricas server</h1><p>Recursos del servidor y clientes web.</p></div></header>
+    <div class="metrics-layout">
+      <nav class="metrics-tabs" role="tablist" aria-label="Métricas server" aria-orientation="vertical">
+        <button type="button" id="resources-tab" role="tab" data-metrics-tab="resources" aria-controls="resources-panel" aria-selected="true" title="Consumo de recursos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-8h4v8"/></svg><span>Consumo de recursos</span></button>
+        <button type="button" id="clients-tab" role="tab" data-metrics-tab="clients" aria-controls="clients-panel" aria-selected="false" tabindex="-1" title="Clientes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-4a6 6 0 0 1 12 0v4M16 4a3 3 0 0 1 0 6M18 13a5 5 0 0 1 3 5v3"/></svg><span>Clientes</span></button>
+      </nav>
+      <section id="resources-panel" class="metrics-panel" role="tabpanel" aria-labelledby="resources-tab">
     <header class="page-header">
       <div>
         <span class="eyebrow">OBSERVABILIDAD</span>
-        <h1>Consumo de recursos</h1>
+        <h2>Consumo de recursos</h2>
         <p>Estado del servidor y sus productos desplegados.</p>
       </div>
       <div class="controls">
@@ -72,7 +80,24 @@
       <p id="modbus-error" role="alert"></p>
     </section>
     <p id="error" role="alert"></p>
+      </section>
+      <section id="clients-panel" class="metrics-panel" role="tabpanel" aria-labelledby="clients-tab" hidden>
+        <header class="page-header"><div><h2>Clientes</h2><p>Una IP agrupa sus navegadores y conexiones. Se conserva su navegación conocida después del cierre.</p></div></header>
+        <div class="clients-controls">
+          <label>Buscar cliente<input type="search" data-clients-search placeholder="Alias, IP o nombre DNS" aria-label="Buscar cliente"></label>
+          <label>Conexión<select data-clients-state><option value="">Todos</option><option value="open">Con conexión abierta</option><option value="closed">Sin conexiones abiertas</option><option value="unknown">Medición no disponible</option></select></label>
+          <label>Origen<select data-clients-network><option value="">Todos</option><option value="Internet">Internet</option><option value="LAN / privada">LAN / privada</option></select></label>
+          <label>Landing<select data-clients-landing><option value="">Todos</option><option value="visited">Visitó el landing</option><option value="not_visited">Sin visita registrada</option></select></label>
+          <button type="button" data-clients-refresh>Actualizar</button>
+        </div>
+        <p data-clients-notice class="client-notice" role="alert"></p>
+        <p id="clients-count" data-clients-count role="status">Consultando clientes…</p>
+        <p id="clients-empty" data-clients-empty hidden>No hay clientes que coincidan.</p>
+        <div class="clients-list" data-clients-list></div>
+      </section>
+    </div>
   </main>
+  <script type="module" src="tabs.js"></script>
   <script type="module" src="app.js"></script>
   <script src="modbus.js"></script>
 </body>

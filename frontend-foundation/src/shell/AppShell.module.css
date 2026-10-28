@@ -17,13 +17,15 @@
   align-items: center;
   gap: var(--sc-space-4);
   min-height: 4rem;
-  padding: var(--sc-space-3) max(var(--sc-space-4), calc((100vw - var(--sc-content-width)) / 2));
+  padding: var(--sc-space-3) max(var(--sc-page-padding-inline), calc((100% - var(--sc-content-width)) / 2 + var(--sc-page-padding-inline)));
   border-bottom: 1px solid var(--sc-color-border);
   background: var(--sc-color-surface);
 }
 
 .identity {
   display: flex;
+  min-width: 0;
+  overflow-wrap: anywhere;
   flex-direction: column;
   color: var(--sc-color-text);
   line-height: var(--sc-line-height-tight);
@@ -42,6 +44,7 @@
   display: flex;
   align-items: center;
   gap: var(--sc-space-2);
+  min-width: 0;
 }
 
 .navigation a {

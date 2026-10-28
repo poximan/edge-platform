@@ -18,6 +18,9 @@ services:
         condition: service_started
       edge-auth:
         condition: service_started
+      resource-monitor:
+        condition: service_started
+        restart: true
     volumes:
       - ./edge-platform/edge-gateway/config/routes.txt:/etc/nginx/source/routes.txt:ro
       - ./edge-platform/edge-gateway/config/nginx.conf:/etc/nginx/source/nginx.conf:ro
@@ -74,7 +77,14 @@ services:
     environment:
       EDGE_PROTECTED_USER: ${EDGE_PROTECTED_USER}
       EDGE_PROTECTED_PASS: ${EDGE_PROTECTED_PASS}
+      KITE_CAT_USER: ${KITE_CAT_USER:?Completar usuario de kite-cat}
+      KITE_CAT_PASS: ${KITE_CAT_PASS:?Completar contraseña de kite-cat}
       EDGE_SESSION_SECRET: ${EDGE_SESSION_SECRET}
+      WEB_CLIENTS_URL: ${WEB_CLIENTS_URL:?Completar URL del registro de clientes}
+      WEB_CLIENTS_KEY: ${WEB_CLIENTS_KEY:?Completar clave interna de clientes}
+    depends_on:
+      resource-monitor:
+        condition: service_started
     restart: unless-stopped
     networks:
       edge:
@@ -148,8 +158,11 @@ services:
       RETENTION_DAYS: "31"
       RESOURCE_DB_PATH: /data/resources.sqlite3
       MODBUS_DIAGNOSTICS_URL: ${MODBUS_DIAGNOSTICS_URL:?Completar endpoint del experto Modbus}
+      WEB_CONNECTION_OBSERVER_URL: ${WEB_CONNECTION_OBSERVER_URL:?Completar URL del observador web}
+      WEB_CLIENTS_KEY: ${WEB_CLIENTS_KEY:?Completar clave interna de clientes}
     volumes:
       - resource-monitor-data:/data
+      - ./resource-monitor/volumes/clients:/clients
     read_only: true
     tmpfs:
       - /tmp:size=8m,mode=1777
@@ -163,6 +176,33 @@ services:
       edge:
         aliases:
           - resource-monitor
+
+  web-connection-observer:
+    image: platform-web-connection-observer:1.0.0
+    container_name: platform-web-connection-observer
+    build:
+      context: .
+      dockerfile: web-connection-observer/Dockerfile
+    network_mode: service:tls-terminator
+    depends_on:
+      tls-terminator:
+        condition: service_started
+        restart: true
+    environment:
+      WEB_CLIENTS_KEY: ${WEB_CLIENTS_KEY:?Completar clave interna de clientes}
+      WEB_LISTENER_PORTS: ${WEB_LISTENER_PORTS:?Completar puertos web observados}
+    pids_limit: 32
+    mem_limit: 64m
+    cpus: 0.10
+    logging: *default-logging
+    read_only: true
+    tmpfs:
+      - /tmp:size=4m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
 
 networks:
   edge:

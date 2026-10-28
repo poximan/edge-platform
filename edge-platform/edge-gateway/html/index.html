@@ -13,6 +13,8 @@
             document.documentElement.dataset.scTheme = theme;
         })();
     </script>
+    <link rel="stylesheet" href="/tokens.css">
+    <link rel="stylesheet" href="/base.css">
     <style>
         :root {
             color-scheme: light;
@@ -55,9 +57,7 @@
             justify-content: center;
         }
         .login-wrapper {
-            width: 100%;
-            max-width: 980px;
-            padding: 32px 24px;
+            --sc-page-max-width: 61.25rem;
         }
         .theme-switcher {
             display: flex;
@@ -96,13 +96,13 @@
         .sections {
             display: grid;
             grid-template-columns: repeat(12, minmax(0, 1fr));
-            gap: 24px;
+            gap: var(--sc-section-gap);
         }
         .system-section {
             grid-column: 1 / -1;
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 20px;
+            padding: var(--sc-panel-padding);
             background: var(--surface-soft);
         }
         .system-section h2 {
@@ -114,7 +114,7 @@
         .cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-            gap: 16px;
+            gap: var(--sc-card-gap);
         }
         .product-title { display: flex; align-items: center; gap: 12px; }
         .product-logo { width: 72px; height: 72px; object-fit: contain; border-radius: 10px; }
@@ -122,11 +122,10 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 20px;
+            padding: var(--sc-card-padding);
             box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            min-height: 188px;
         }
         .card h2,
         .card h3 {
@@ -201,9 +200,10 @@
     <link rel="stylesheet" href="/layout.css">
     <link rel="stylesheet" href="/product-tiles.css">
     <script type="module" src="/layout.js"></script>
+    <script type="module" src="/portal-navigation.js"></script>
 </head>
 <body>
-<div class="login-wrapper">
+<div class="sc-page login-wrapper">
     <div class="theme-switcher" role="group" aria-label="Apariencia">
         <span>Tema</span>
         <button data-theme-choice="light" type="button">Claro</button>
@@ -223,10 +223,10 @@
         <section class="system-section" data-system="platform" aria-labelledby="platform-title">
             <h2 id="platform-title">platform</h2>
             <div class="cards">
-                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm('/recursos/')" aria-label="Abrir monitor de recursos">
+                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm('/recursos/')" data-product-path="/recursos/" aria-label="Abrir Métricas server">
                     <span class="tile-face">
-                        <span class="tile-title">Consumo de recursos</span>
-                        <span class="tile-description">CPU, memoria y disco por producto y por contenedor</span>
+                        <span class="tile-title">Métricas server</span>
+                        <span class="tile-description">Recursos del servidor y clientes web</span>
                     </span>
                 </button>
             </div>
@@ -234,7 +234,7 @@
         <section class="system-section" data-system="reportespiolis" aria-labelledby="reportespiolis-title">
             <h2 id="reportespiolis-title">reportespiolis</h2>
             <div class="cards">
-                <a class="card product-tile" data-product-tile href="/reporte/" draggable="false" aria-label="Abrir reportespiolis">
+                <a class="card product-tile" data-product-tile href="/reporte/" data-product-path="/reporte/" draggable="false" aria-label="Abrir reportespiolis">
                     <span class="tile-face">
                         <span class="tile-title">Reporte horario</span>
                         <span class="tile-description">Reportes historicos de niveles, volumenes y estado de los sitios</span>
@@ -245,7 +245,7 @@
         <section class="system-section" data-system="moto-tester" aria-labelledby="moto-tester-title">
             <h2 id="moto-tester-title" class="product-title"><img class="product-logo" src="/moto-tester/assets/trasvase.png" alt="" width="72" height="72" draggable="false">moto-tester</h2>
             <div class="cards">
-                <a class="card product-tile" data-product-tile href="/moto-tester/" draggable="false" aria-label="Abrir moto-tester">
+                <a class="card product-tile" data-product-tile href="/moto-tester/" data-product-path="/moto-tester/" draggable="false" aria-label="Abrir moto-tester">
                     <span class="tile-face">
                         <span class="tile-title">Trasvase Tester</span>
                         <span class="tile-description">Web de prueba y diagnostico Modbus/TCP para bombas de trasvase</span>
@@ -256,19 +256,19 @@
         <section class="system-section" data-system="lechuza-server" aria-labelledby="lechuza-title">
             <h2 id="lechuza-title" class="product-title"><img class="product-logo" src="/lechu/icono.png" alt="" width="72" height="72">lechuza-server</h2>
             <div class="cards">
-                <button class="card product-tile" data-product-tile type="button" onclick="enterSecure()" aria-label="Entrar a lechuza-server en modo seguro">
+                <button class="card product-tile" data-product-tile type="button" onclick="enterSecure()" data-product-path="/lechu/" aria-label="Entrar a lechuza-server en modo seguro">
                     <span class="tile-face">
                         <span class="tile-title">Modo seguro</span>
                         <span class="tile-description">Version reducida de libre acceso, no se exponen datos sensibles</span>
                     </span>
                 </button>
-                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm()" aria-label="Entrar a lechuza-server en modo protegido">
+                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm()" data-product-path="/lechu/" aria-label="Entrar a lechuza-server en modo protegido">
                     <span class="tile-face">
                         <span class="tile-title">Modo protegido</span>
                         <span class="tile-description">Requiere permisos para acceder a toda la informacion</span>
                     </span>
                 </button>
-                <button class="card product-tile" data-product-tile type="button" onclick="showAlarmeroForm()" aria-label="Abrir alarmero">
+                <button class="card product-tile" data-product-tile type="button" onclick="showAlarmeroForm()" data-product-path="/alarmero/" aria-label="Abrir alarmero">
                     <span class="tile-face">
                         <span class="tile-title">Alarmero</span>
                         <span class="tile-description">Incidencias activas, historial, despachos y tiempos de despeje</span>
@@ -279,7 +279,7 @@
         <section class="system-section" data-system="kite-cat" aria-labelledby="kite-cat-title">
             <h2 id="kite-cat-title" class="product-title"><img class="product-logo" src="/kite-cat/logo.png" alt="" width="72" height="72">kite-cat</h2>
             <div class="cards">
-                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm('/kite-cat/')" aria-label="Abrir kite-cat">
+                <button class="card product-tile" data-product-tile type="button" onclick="showProtectedForm('/kite-cat/')" data-product-path="/kite-cat/" aria-label="Abrir kite-cat">
                     <span class="tile-face">
                         <span class="tile-title">Inventario de SIM</span>
                         <span class="tile-description">ICC, identificación, estado, número de línea y consumo mensual de datos</span>
@@ -290,7 +290,7 @@
         <section class="system-section" data-system="chatcheto" aria-labelledby="chatcheto-title">
             <h2 id="chatcheto-title">chatcheto</h2>
             <div class="cards">
-                <button class="card product-tile" data-product-tile type="button" onclick="showChatchetoForm()" aria-label="Abrir chatcheto">
+                <button class="card product-tile" data-product-tile type="button" onclick="showChatchetoForm()" data-product-path="/chatcheto/" aria-label="Abrir chatcheto">
                     <span class="tile-face">
                         <span class="tile-title">Atendedor</span>
                         <span class="tile-description">chatbot wp + broker + GIS</span>
@@ -300,15 +300,15 @@
         </section>
     </div>
     <div id="protected-login" class="card hidden">
-        <h2>Autenticacion protegida</h2>
-        <p>Las credenciales se validan en el router publico.</p>
+        <h2 id="protected-title">Autenticacion protegida</h2>
+        <p id="protected-description">Ingrese las credenciales de acceso.</p>
         <form id="protected-form">
             <label for="user">Usuario</label>
             <input id="user" name="user" type="text" autocomplete="username" required>
             <label for="pass">Contrasena</label>
             <input id="pass" name="pass" type="password" autocomplete="current-password" required>
             <div class="error" id="error-msg"></div>
-            <button class="secondary" type="submit">Entrar modo protegido</button>
+            <button id="protected-submit" class="secondary" type="submit">Entrar modo protegido</button>
             <button class="ghost" type="button" onclick="backToChoice()">Volver al inicio</button>
         </form>
     </div>
@@ -372,6 +372,12 @@
 
     window.showProtectedForm = function (target = "/lechu/") {
         protectedTarget = target;
+        const kiteCat = target === "/kite-cat/";
+        document.getElementById("protected-title").textContent = kiteCat ? "Acceso kite-cat" : "Autenticacion protegida";
+        document.getElementById("protected-description").textContent = kiteCat
+            ? "Ingrese las credenciales de kite-cat."
+            : "Ingrese las credenciales de acceso.";
+        document.getElementById("protected-submit").textContent = kiteCat ? "Abrir kite-cat" : "Entrar modo protegido";
         choiceSection.classList.add("hidden");
         protectedSection.classList.remove("hidden");
         errorBox.textContent = "";
@@ -444,7 +450,7 @@
             return;
         }
         try {
-            const response = await fetch("/mode/protected", {
+            const response = await fetch(protectedTarget === "/kite-cat/" ? "/mode/kite-cat" : "/mode/protected", {
                 method: "POST",
                 headers: {
                     "X-Mode-User": user,

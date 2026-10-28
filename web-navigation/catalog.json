@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "products": [
+    {"id":"lechuza-server","label":"lechuza-server","prefix":"/lechu/","pages":{"exemys":"Exemys","charito":"Charito","generadores":"Generadores","proxmox":"Proxmox","reles":"Relés MiCOM","analizadores":"Analizadores de red","caudalimetros":"Caudalímetros","mantenimiento":"Mantenimiento","mensagelo":"Mensagelo","broker":"Broker","email":"Correo"}},
+    {"id":"moto-tester","label":"moto-tester","prefix":"/moto-tester/","pages":{}},
+    {"id":"reportespiolis","label":"reportespiolis","prefix":"/reporte/","pages":{}},
+    {"id":"alarmero","label":"Alarmero","prefix":"/alarmero/","pages":{}},
+    {"id":"kite-cat","label":"kite-cat","prefix":"/kite-cat/","pages":{}},
+    {"id":"chatcheto","label":"Chatcheto","prefix":"/chatcheto/","pages":{"chats":"Conversaciones","dashboard":"Indicadores","business":"Negocio","system":"Sistema","bkr-gis":"Broker GIS","bkr-movil":"Broker móvil","gis":"GIS","diffusion":"Difusión","known_events":"Eventos conocidos"}},
+    {"id":"server-metrics","label":"Métricas server","prefix":"/recursos/","pages":{"resources":"Consumo de recursos","clients":"Clientes"}}
+  ]
+}

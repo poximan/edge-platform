@@ -41,6 +41,10 @@ function renderModbus(data) {
 }
 
 async function loadModbus() {
+  if (document.hidden || document.querySelector('#resources-panel').hidden) {
+    setTimeout(loadModbus, 3000);
+    return;
+  }
   try {
     const response = await fetch("api/modbus", { cache: "no-store" });
     const data = await response.json();

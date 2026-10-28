@@ -128,7 +128,10 @@ def render_access(rule: Rule) -> list[str]:
             "auth_request /__edge_auth_verify;",
             "error_page 401 403 = @edge_auth_redirect;",
         ]
-    return ["auth_request /__edge_auth_session;"]
+    lines = ["auth_request /__edge_auth_session;"]
+    if rule.scope == 'public':
+        lines.append('error_page 401 403 = @edge_auth_redirect;')
+    return lines
 
 
 def render_proxy(rule: Rule, index: int) -> list[str]:
@@ -294,6 +297,7 @@ def render_internal(rules: list[Rule]) -> str:
                 "        proxy_pass_request_body off;",
                 '        proxy_set_header Content-Length "";',
                 "        proxy_set_header Cookie $http_cookie;",
+                "        proxy_set_header X-Edge-Original-URI $request_uri;",
                 "    }",
                 "",
                 "    location = /__edge_auth_verify {",
@@ -302,6 +306,7 @@ def render_internal(rules: list[Rule]) -> str:
                 "        proxy_pass_request_body off;",
                 '        proxy_set_header Content-Length "";',
                 "        proxy_set_header Cookie $http_cookie;",
+                "        proxy_set_header X-Edge-Original-URI $request_uri;",
                 "    }",
                 "",
                 "    location @edge_auth_redirect {",

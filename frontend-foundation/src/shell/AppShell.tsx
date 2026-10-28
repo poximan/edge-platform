@@ -1,4 +1,5 @@
-import { useLayoutEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, type ReactNode } from "react";
+import { startVisitTracking } from "../navigation/visit-tracker.js";
 
 import { applyServicoopTheme, SERVICOOP_THEME_STORAGE_KEY } from "../theme";
 import styles from "./AppShell.module.css";
@@ -16,6 +17,7 @@ export interface AppShellProps {
 }
 
 export function AppShell({ children, links = [], productName, sectionName = "Comunicaciones" }: AppShellProps) {
+  useEffect(() => { startVisitTracking(); }, []);
   useLayoutEffect(() => {
     const applyTheme = (event?: StorageEvent) => {
       if (!event || event.key === SERVICOOP_THEME_STORAGE_KEY) applyServicoopTheme();

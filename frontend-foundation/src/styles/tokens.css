@@ -17,6 +17,12 @@
   --sc-space-5: 1.5rem;
   --sc-space-6: 2rem;
   --sc-space-7: 3rem;
+  --sc-page-padding-inline: clamp(1rem, 2vw, 2rem);
+  --sc-page-padding-block: clamp(1.25rem, 2.5vw, 2.5rem);
+  --sc-panel-padding: clamp(1rem, 1.6vw, 1.5rem);
+  --sc-card-padding: var(--sc-space-3);
+  --sc-card-gap: var(--sc-space-2);
+  --sc-section-gap: clamp(1rem, 1.6vw, 1.5rem);
   --sc-radius-sm: 0.375rem;
   --sc-radius-md: 0.625rem;
   --sc-radius-lg: 0.875rem;

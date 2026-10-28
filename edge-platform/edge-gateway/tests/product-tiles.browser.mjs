@@ -4,7 +4,7 @@ import { chromium } from "playwright-core";
 const origin = process.env.PORTAL_ORIGIN ?? "http://platform-landing-preview:8081";
 const browser = await chromium.launch({ executablePath: "/usr/bin/chromium", args: ["--no-sandbox", "--disable-dev-shm-usage"] });
 const products = [
-  { label: "Abrir monitor de recursos", target: "/recursos/", form: "protected" },
+  { label: "Abrir Métricas server", target: "/recursos/", form: "protected" },
   { label: "Abrir reportespiolis", target: "/reporte/" },
   { label: "Abrir moto-tester", target: "/moto-tester/" },
   { label: "Entrar a lechuza-server en modo seguro", target: "/lechu/", secure: true },
@@ -24,7 +24,7 @@ async function prepare(page) {
       secureRequests++;
       return route.fulfill({ status: 204 });
     }
-    if (path === "/mode/protected") {
+    if (path === "/mode/protected" || path === "/mode/kite-cat") {
       authRequests++;
       assert.equal(request.headers()["x-mode-user"], "tile-test");
       assert.equal(request.headers()["x-mode-pass"], "tile-test");

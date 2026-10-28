@@ -19,10 +19,13 @@ COPY --from=python-deps /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-auth/src /app/src
+COPY --chown=${APP_UID}:${APP_GID} web-navigation/navigation_catalog.py /app/navigation_catalog.py
+COPY --chown=${APP_UID}:${APP_GID} web-navigation/catalog.json /app/catalog.json
 
 ENV PYTHONPATH=/app \
     EDGE_SESSION_COOKIE_NAME=servicoop_edge_session \
     EDGE_SESSION_TTL_SECONDS=28800
+ENV WEB_NAVIGATION_CATALOG_FILE=/app/catalog.json
 
 EXPOSE 8085
 

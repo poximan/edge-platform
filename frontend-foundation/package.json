@@ -6,7 +6,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens.css": "./src/styles/tokens.css",
-    "./base.css": "./src/styles/base.css"
+    "./base.css": "./src/styles/base.css",
+    "./visit-tracker": {
+      "types": "./src/navigation/visit-tracker.d.ts",
+      "default": "./src/navigation/visit-tracker.js"
+    }
   },
   "peerDependencies": {
     "react": "19.2.8",

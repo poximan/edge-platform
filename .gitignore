@@ -4,4 +4,5 @@ __pycache__/
 **/node_modules/
 **/dist/
 *.tsbuildinfo
+resource-monitor/volumes/clients/
 artifact-repository/volumes/repository/*/app.apk

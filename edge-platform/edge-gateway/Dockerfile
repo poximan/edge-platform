@@ -19,6 +19,9 @@ WORKDIR /app
 COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-gateway/generate_routes.py /app/generate_routes.py
 COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-gateway/config /etc/nginx/source
 COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-gateway/html /usr/share/nginx/html
+COPY --chown=${APP_UID}:${APP_GID} frontend-foundation/src/styles/tokens.css /usr/share/nginx/html/tokens.css
+COPY --chown=${APP_UID}:${APP_GID} frontend-foundation/src/styles/base.css /usr/share/nginx/html/base.css
+COPY --chown=${APP_UID}:${APP_GID} frontend-foundation/src/navigation/visit-tracker.js /usr/share/nginx/html/visit-tracker.js
 COPY --chown=${APP_UID}:${APP_GID} edge-platform/edge-gateway/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 RUN chmod 0555 /app/docker-entrypoint.sh /app/generate_routes.py

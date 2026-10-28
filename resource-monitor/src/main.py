@@ -11,6 +11,11 @@ from .history_service import ResourceHistoryService
 from .docker_client import DockerMetricsClient
 from .storage import MetricsStorage
 from .modbus_client import ModbusDiagnosticsClient
+from navigation_catalog import NavigationCatalog
+from .clients_storage import ClientsStorage
+from .clients_service import ClientsService
+from .clients_api import ClientsApi
+from .clients_events import ClientEventsReceiver
 
 
 def required_int(name: str, minimum: int, maximum: int) -> int:
@@ -24,6 +29,15 @@ def required_int(name: str, minimum: int, maximum: int) -> int:
 
 
 STATIC_ROOT = Path("/app/static")
+navigation_catalog = NavigationCatalog(os.environ['WEB_NAVIGATION_CATALOG_FILE'])
+clients_service = ClientsService(
+    ClientsStorage(os.environ['WEB_CLIENTS_FILE'], navigation_catalog), navigation_catalog,
+    os.environ['WEB_CONNECTION_OBSERVER_URL'], os.environ['WEB_CLIENTS_KEY'],
+)
+if len(clients_service.key) < 32:
+    raise ValueError('WEB_CLIENTS_KEY debe contener al menos 32 caracteres')
+clients_api = ClientsApi(clients_service)
+client_events = ClientEventsReceiver(clients_service)
 modbus_client = ModbusDiagnosticsClient(os.environ["MODBUS_DIAGNOSTICS_URL"])
 storage = MetricsStorage(
     os.environ.get("RESOURCE_DB_PATH", "/data/resources.sqlite3"),
@@ -56,6 +70,8 @@ class Handler(BaseHTTPRequestHandler):
         self.response(status, json.dumps(payload, separators=(",", ":")).encode("utf-8"), "application/json")
 
     def do_GET(self) -> None:
+        if clients_api.handle(self):
+            return
         parsed = urlsplit(self.path)
         if parsed.path == "/health":
             health = collector.health()
@@ -102,12 +118,24 @@ class Handler(BaseHTTPRequestHandler):
             "/app.js": ("app.js", "text/javascript; charset=utf-8"),
             "/trend-chart.js": ("trend-chart.js", "text/javascript; charset=utf-8"),
             "/modbus.js": ("modbus.js", "text/javascript; charset=utf-8"),
+            "/tabs.js": ("tabs.js", "text/javascript; charset=utf-8"),
+            "/clients.js": ("clients.js", "text/javascript; charset=utf-8"),
+            "/clients.css": ("clients.css", "text/css; charset=utf-8"),
+            "/visit-tracker.js": ("visit-tracker.js", "text/javascript; charset=utf-8"),
         }
         target = files.get(parsed.path)
         if target is None:
             self.json_response(404, {"error": "no_encontrado"})
             return
         self.response(200, (STATIC_ROOT / target[0]).read_bytes(), target[1])
+
+    def do_POST(self):
+        if not clients_api.handle(self):
+            self.json_response(404, {'error': 'Endpoint inexistente'})
+
+    def do_PUT(self):
+        if not clients_api.handle(self):
+            self.json_response(404, {'error': 'Endpoint inexistente'})
 
 
 server = ThreadingHTTPServer(("0.0.0.0", 8091), Handler)
@@ -121,8 +149,12 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
     collector.start()
+    clients_service.start()
+    client_events.start()
     try:
         server.serve_forever()
     finally:
         collector.stop()
+        clients_service.stop()
+        client_events.stop()
         server.server_close()

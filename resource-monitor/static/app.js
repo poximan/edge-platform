@@ -153,6 +153,7 @@ function setHistoryStatus(message, status) {
 }
 
 async function loadSnapshot(automatic = false) {
+  if (document.hidden || document.querySelector('#resources-panel').hidden) return;
   if (automatic && state.snapshotPending) return;
   state.snapshotController?.abort();
   const controller = new AbortController();
@@ -182,6 +183,7 @@ async function loadSnapshot(automatic = false) {
 }
 
 async function loadHistory(automatic = false) {
+  if (document.hidden || document.querySelector('#resources-panel').hidden) return;
   if (automatic && state.historyPending) return;
   const hours = periodSelect.value;
   state.historyController?.abort();
@@ -247,6 +249,15 @@ for (const button of document.querySelectorAll("[data-sort]")) {
   });
 }
 window.addEventListener("resize", () => charts.forEach(chart => chart.draw()));
+window.addEventListener('metrics-tab-change', event => {
+  if (event.detail === 'resources') {
+    void loadSnapshot(true);
+    void loadHistory(true);
+  } else {
+    state.snapshotController?.abort();
+    state.historyController?.abort();
+  }
+});
 window.addEventListener("storage", event => {
   if (event.key !== "servicoop-theme") return;
   const stored = localStorage.getItem("servicoop-theme");

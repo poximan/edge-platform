@@ -1,7 +1,25 @@
 .card {
+  min-width: 0;
+  padding: var(--sc-card-padding);
   overflow: hidden;
   border: 1px solid var(--sc-color-border);
   border-radius: var(--sc-radius-lg);
   background: var(--sc-color-surface);
   box-shadow: var(--sc-shadow-raised);
+}
+
+.card[data-sc-padding="compact"] {
+  padding: var(--sc-space-2);
+}
+
+.card[data-sc-padding="none"] {
+  padding: 0;
+}
+
+.card > :first-child {
+  margin-block-start: 0;
+}
+
+.card > :last-child {
+  margin-block-end: 0;
 }

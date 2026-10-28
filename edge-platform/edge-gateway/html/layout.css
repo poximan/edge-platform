@@ -3,7 +3,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin: -8px 0 24px;
+    margin: 0 0 var(--sc-section-gap);
     color: var(--muted);
     font-size: 13px;
 }
@@ -47,7 +47,7 @@
 .layout-row {
     grid-column: 1 / -1;
     display: grid;
-    gap: 24px;
+    gap: var(--sc-section-gap);
     grid-template-columns: minmax(0, 1fr);
 }
 .layout-row[data-columns="2"] {

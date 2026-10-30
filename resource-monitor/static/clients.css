@@ -36,6 +36,30 @@
 .client-tree li, .client-connections li { margin-block: var(--sc-space-1); }
 .client-connections { max-height: 8rem; overflow: auto; }
 .client-alias-error { margin-block: var(--sc-space-1); font-size: var(--sc-font-size-sm); overflow-wrap: anywhere; }
+.clients-csv-download { display: inline-flex; align-items: center; min-height: 2.25rem; padding: var(--sc-space-2) var(--sc-space-3); border: 1px solid var(--sc-color-border); border-radius: var(--sc-radius-md); text-decoration: none; }
+.client-identification { margin-top: var(--sc-space-1); padding-block: var(--sc-space-1); border-block: 1px solid var(--sc-color-border); }
+.client-identification-header, .client-inventory-header { display: flex; align-items: center; justify-content: space-between; gap: var(--sc-space-2); }
+.client-identification-edit { flex: none; width: 1.75rem; min-height: 1.75rem; padding: 0; font-size: 1.15rem; color: var(--sc-color-text); background: transparent; border-color: var(--sc-color-border); }
+.client-identification-display { display: grid; gap: var(--sc-space-1); overflow-wrap: anywhere; font-size: var(--sc-font-size-xs); }
+.client-identification-display > p { margin: 0; white-space: pre-wrap; }
+.client-identification-display > strong { font-size: var(--sc-font-size-sm); }
+.client-identification-verification, .client-inventory-note { color: var(--sc-color-text-muted); }
+.client-identification-sources { display: flex; flex-wrap: wrap; gap: var(--sc-space-3); }
+.client-identification-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sc-space-2); margin-top: var(--sc-space-2); }
+.client-identification-form > label, .client-inventory-dialog > label { display: grid; min-width: 0; gap: var(--sc-space-1); font-size: var(--sc-font-size-sm); }
+.client-identification-form input, .client-identification-form textarea, .client-inventory-dialog > label input { width: 100%; min-width: 0; max-width: 100%; }
+.client-identification-form textarea { resize: vertical; }
+.client-identification-wide, .client-identification-actions, .client-identification-form > .client-notice { grid-column: 1 / -1; }
+.client-identification-actions { display: flex; gap: var(--sc-space-2); }
+.client-identification-form > .client-notice { margin: 0; font-size: var(--sc-font-size-sm); }
+.client-identification-display[hidden], .client-identification-edit[hidden], .client-inventory-entry[hidden] { display: none; }
+.client-inventory-dialog { width: min(58rem, calc(100vw - 2 * var(--sc-space-3))); max-height: 90dvh; overflow-y: auto; margin: auto; padding: var(--sc-space-3); border: 1px solid var(--sc-color-border); border-radius: var(--sc-radius-lg); background: var(--sc-color-surface); color: var(--sc-color-text); }
+.client-inventory-dialog::backdrop { background: rgb(0 0 0 / 60%); }
+.client-inventory-header h3 { margin: 0; }
+.client-inventory-note { margin-block: var(--sc-space-2); font-size: var(--sc-font-size-sm); }
+.client-inventory-list { display: grid; gap: var(--sc-space-2); }
+.client-inventory-entry { min-width: 0; padding: var(--sc-space-2); border: 1px solid var(--sc-color-border); border-radius: var(--sc-radius-md); }
 #clients-empty, #clients-count { color: var(--sc-color-text-muted); }
 @media (max-width: 60rem) { .metrics-layout { grid-template-columns: 3.5rem minmax(0, 1fr); gap: var(--sc-space-3); } .metrics-tabs { padding: var(--sc-space-1); } .metrics-tabs button { justify-content: center; padding-inline: var(--sc-space-1); } .metrics-tabs span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
 @media (max-width: 45rem) { .client-details { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+@media (max-width: 32rem) { .client-identification-form { grid-template-columns: minmax(0, 1fr); } }

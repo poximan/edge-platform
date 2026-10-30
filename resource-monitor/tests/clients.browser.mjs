@@ -2,15 +2,15 @@ import assert from 'node:assert/strict';
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || '/tmp/playwright/package/index.mjs');
 const origin = process.env.METRICS_ORIGIN || 'http://platform-resource-monitor:8091';
 const initialRows = [
-  { ip: '192.0.2.10', alias: '<Oficina norte>', hostname: 'oficina.example', network: 'LAN / privada', landing_seen: true,
+  { ip: '192.0.2.10', alias: '<Oficina norte>', hostname: 'oficina.example', identification: null, network: 'LAN / privada', landing_seen: true,
     connection_state: 'open', open_count: 1, connections: [{ remote_port: 54321, server_port: 443 }],
     navigation: [{ label: 'lechuza-server', entered: true, pages: [{ label: 'Caudalímetros' }] },
                  { label: 'kite-cat', entered: false, pages: [] }] },
-  { ip: '2001:db8:1234:abcd:1234:5678:90ab:cdef', alias: '', hostname: null, network: 'Internet', landing_seen: true,
+  { ip: '2001:db8:1234:abcd:1234:5678:90ab:cdef', alias: '', hostname: null, identification: null, network: 'Internet', landing_seen: true,
     connection_state: 'closed', open_count: 0, connections: [], navigation: [] },
-  { ip: '192.0.2.30', alias: 'Equipo LAN sin landing', hostname: null, network: 'LAN / privada', landing_seen: false,
+  { ip: '192.0.2.30', alias: 'Equipo LAN sin landing', hostname: null, identification: null, network: 'LAN / privada', landing_seen: false,
     connection_state: 'closed', open_count: 0, connections: [], navigation: [] },
-  { ip: '203.0.113.20', alias: 'Equipo Internet sin landing', hostname: null, network: 'Internet', landing_seen: false,
+  { ip: '203.0.113.20', alias: 'Equipo Internet sin landing', hostname: null, identification: null, network: 'Internet', landing_seen: false,
     connection_state: 'open', open_count: 1, connections: [{ remote_port: 54322, server_port: 443 }], navigation: [] },
 ];
 const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--disable-dev-shm-usage'] });

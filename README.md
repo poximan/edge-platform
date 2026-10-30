@@ -134,7 +134,7 @@ Detrás de NAT, todos los equipos con la misma IP visible forman un cliente.
 El nombre DNS inverso es opcional; no permite pedir el nombre privado de un
 equipo al navegador y puede describir al proveedor de conectividad.
 
-El único almacenamiento nuevo es el archivo de texto UTF-8
+El registro de observaciones usa el archivo de texto UTF-8
 `resource-monitor/volumes/clients/clients.txt`, con estructura JSON versionada,
 permisos 0600 y reemplazo atómico. Contiene alias, nombre DNS opcional, visita
 previa al landing y árbol acumulado. Las conexiones activas se miden en memoria;
@@ -142,6 +142,37 @@ el TXT no contiene contraseñas, cookies, tokens ni autorizaciones. El directori
 debe ser escribible por UID/GID 1000. Un archivo corrupto impide iniciar el
 registro; nunca se sobrescribe silenciosamente. Las métricas existentes siguen
 usando su almacenamiento anterior.
+
+El inventario de identificación se guarda por separado en el CSV UTF-8 persistente
+`resource-monitor/volumes/clients/client-details.csv` (dentro del contenedor,
+`/clients/client-details.csv`). Incluye las 80 IP del relevamiento del 29/10/2026:
+74 públicas y 6 privadas. Cada fila conserva IP, nombre DNS documentado, entidad o
+servicio, ASN, descripción con sus límites de atribución, fecha de revisión,
+verificación DNS y URL de las fuentes. La semilla versionada vive en
+`resource-monitor/config/client-details.csv`; se copia únicamente si falta el
+archivo persistente y nunca reemplaza las revisiones del operador. El archivo
+runtime también queda disponible en el workspace sin arrancar el servicio.
+
+Clientes muestra esa identificación debajo de la IP y del alias, con un lápiz
+para editarla. El botón **Inventario CSV** permite consultar, buscar y editar
+todas las filas, incluso las IP que no tengan observaciones registradas; **Descargar
+CSV** entrega el archivo completo. El nombre documentado tiene prioridad visual
+sobre el DNS automático, con su fecha y origen CSV explícitos. Los cambios se
+guardan atómicamente con permisos 0600 y una revisión por fila evita sobrescribir
+una edición concurrente. Las modificaciones externas del CSV se releen al consultar
+o editar; un CSV inválido se informa y no se reemplaza por datos inventados.
+
+Las operaciones `GET /api/clients/identification`, `GET
+/api/clients/identification.csv` y `PUT /api/clients/identification` requieren la
+misma identidad protegida que Clientes; la escritura exige además la cabecera y
+validación de origen usadas por los alias. El campo `identification` de cada
+cliente es un objeto con esas columnas y su revisión, o `null` si falta información.
+El CSV no modifica alias, landing, permisos, navegación ni conexiones y no
+convierte una atribución de red en una identificación cierta de personas.
+`client_details_storage.py` es dueño del CSV y `client-identification.js` de su
+presentación y edición; `clients_service.py` compone la identificación con las
+observaciones existentes. Esta función solo requiere actualizar `resource-monitor`;
+no añade puertos ni bases de datos.
 
 `web-connection-observer` comparte exclusivamente el espacio de red de
 `tls-terminator`. Lee ESTABLISHED en `/proc/net/tcp{,6}` para los listeners

@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / 'web-navigation'))
 sys.path.insert(0, str(ROOT / 'resource-monitor'))
 from navigation_catalog import NavigationCatalog, normalize_ip
 from src.clients_storage import ClientsStorage
+from src.client_details_storage import ClientDetailsStorage
 from src.clients_service import ClientsService
 from src.clients_api import ClientsApi
 
@@ -27,8 +28,11 @@ class WebClientsTests(unittest.TestCase):
         self.path = Path(self.directory.name) / 'clients.txt'
         self.catalog = NavigationCatalog(ROOT / 'web-navigation/catalog.json')
         self.store = ClientsStorage(self.path, self.catalog)
+        self.identifications = ClientDetailsStorage(Path(self.directory.name) / 'client-details.csv',
+                                                    ROOT / 'resource-monitor/config/client-details.csv')
         self.now = 10
         self.service = ClientsService(self.store, self.catalog, 'http://unused', 'k' * 48,
+                                      self.identifications,
                                       monotonic=lambda: self.now)
 
     def tearDown(self):
@@ -37,6 +41,8 @@ class WebClientsTests(unittest.TestCase):
     def request(self, command, path, headers=None, body=None):
         class Handler:
             def json_response(inner, status, payload):
+                inner.result = status, payload
+            def response(inner, status, payload, content_type):
                 inner.result = status, payload
         handler = Handler()
         handler.command, handler.path = command, path
@@ -59,6 +65,50 @@ class WebClientsTests(unittest.TestCase):
                                       {'X-Clients-Key': 'k' * 48}), (200, {'known': False}))
         self.assertEqual(self.request('GET', '/api/clients',
                                       {'X-Edge-Mode': 'protected', 'X-Edge-User': 'operator'})[0], 200)
+
+    def test_inventory_enriches_observed_clients_without_creating_visits_or_overwriting_aliases(self):
+        self.assertEqual(80, len(self.identifications.snapshot()))
+        self.assertEqual([], self.service.snapshot()['clients'])
+        self.store.seen('51.8.102.207')
+        self.store.alias('51.8.102.207', 'Alias elegido a mano')
+        client = self.service.snapshot()['clients'][0]
+        self.assertEqual('Alias elegido a mano', client['alias'])
+        self.assertFalse(client['landing_seen'])
+        self.assertEqual([], client['navigation'])
+        self.assertIn('rango de OAI-SearchBot', client['identification']['entity'])
+        self.assertEqual('2026-10-29', client['identification']['reviewed_on'])
+
+    def test_inventory_api_protects_download_and_uses_revision_for_edits(self):
+        self.assertEqual(403, self.request('GET', '/api/clients/identification')[0])
+        self.assertEqual(403, self.request('GET', '/api/clients/identification.csv')[0])
+        headers = {'X-Edge-Mode': 'protected', 'X-Edge-User': 'operator'}
+        status, data = self.request('GET', '/api/clients/identification', headers)
+        self.assertEqual(200, status)
+        original = data['items'][0]
+        details = {name: value for name, value in original.items() if name not in {'ip', 'revision'}}
+        details['description'] = 'Descripción revisada desde la interfaz'
+        body = {'ip': original['ip'], 'details': details, 'revision': original['revision']}
+        self.assertEqual(403, self.request('PUT', '/api/clients/identification', headers, body)[0])
+        headers['X-Clients-Request'] = '1'
+        self.assertEqual(403, self.request('PUT', '/api/clients/identification',
+                                         {**headers, 'Sec-Fetch-Site': 'cross-site'}, body)[0])
+        status, saved = self.request('PUT', '/api/clients/identification', headers, body)
+        self.assertEqual(200, status)
+        self.assertNotEqual(original['revision'], saved['identification']['revision'])
+        self.assertEqual(409, self.request('PUT', '/api/clients/identification', headers, body)[0])
+        status, exported = self.request('GET', '/api/clients/identification.csv', headers)
+        self.assertEqual(200, status)
+        self.assertIn('Descripción revisada desde la interfaz', exported.decode('utf-8-sig'))
+
+    def test_inventory_rejects_unsafe_links_and_preserves_existing_csv_on_restart(self):
+        original = next(iter(self.identifications.snapshot().values()))
+        details = {name: value for name, value in original.items() if name not in {'ip', 'revision'}}
+        with self.assertRaisesRegex(ValueError, 'HTTP'):
+            self.identifications.update(original['ip'], {**details, 'source_urls': 'javascript:alert(1)'}, original['revision'])
+        details['entity'] = 'Entidad verificada a mano'
+        self.identifications.update(original['ip'], details, original['revision'])
+        restarted = ClientDetailsStorage(self.identifications.path, ROOT / 'resource-monitor/config/client-details.csv')
+        self.assertEqual('Entidad verificada a mano', restarted.snapshot()[original['ip']]['entity'])
 
     def test_alias_api_validates_origin_header_and_writes_txt(self):
         self.store.seen('192.0.2.10')

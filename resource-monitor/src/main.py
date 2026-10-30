@@ -13,6 +13,7 @@ from .storage import MetricsStorage
 from .modbus_client import ModbusDiagnosticsClient
 from navigation_catalog import NavigationCatalog
 from .clients_storage import ClientsStorage
+from .client_details_storage import ClientDetailsStorage
 from .clients_service import ClientsService
 from .clients_api import ClientsApi
 from .clients_events import ClientEventsReceiver
@@ -33,6 +34,7 @@ navigation_catalog = NavigationCatalog(os.environ['WEB_NAVIGATION_CATALOG_FILE']
 clients_service = ClientsService(
     ClientsStorage(os.environ['WEB_CLIENTS_FILE'], navigation_catalog), navigation_catalog,
     os.environ['WEB_CONNECTION_OBSERVER_URL'], os.environ['WEB_CLIENTS_KEY'],
+    ClientDetailsStorage(os.environ['WEB_CLIENT_DETAILS_FILE'], os.environ['WEB_CLIENT_DETAILS_SEED']),
 )
 if len(clients_service.key) < 32:
     raise ValueError('WEB_CLIENTS_KEY debe contener al menos 32 caracteres')
@@ -120,6 +122,7 @@ class Handler(BaseHTTPRequestHandler):
             "/modbus.js": ("modbus.js", "text/javascript; charset=utf-8"),
             "/tabs.js": ("tabs.js", "text/javascript; charset=utf-8"),
             "/clients.js": ("clients.js", "text/javascript; charset=utf-8"),
+            "/client-identification.js": ("client-identification.js", "text/javascript; charset=utf-8"),
             "/clients.css": ("clients.css", "text/css; charset=utf-8"),
             "/visit-tracker.js": ("visit-tracker.js", "text/javascript; charset=utf-8"),
         }

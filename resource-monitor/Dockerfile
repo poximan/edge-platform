@@ -12,6 +12,7 @@ COPY --chown=${APP_UID}:${APP_GID} resource-monitor/src /app/src
 COPY --chown=${APP_UID}:${APP_GID} web-navigation/navigation_catalog.py /app/navigation_catalog.py
 COPY --chown=${APP_UID}:${APP_GID} web-navigation/catalog.json /app/catalog.json
 COPY --chown=${APP_UID}:${APP_GID} resource-monitor/static /app/static
+COPY --chown=${APP_UID}:${APP_GID} resource-monitor/config /app/config
 COPY --chown=${APP_UID}:${APP_GID} frontend-foundation/src/styles/tokens.css /app/static/tokens.css
 COPY --chown=${APP_UID}:${APP_GID} frontend-foundation/src/styles/base.css /app/static/base.css
 COPY --chown=${APP_UID}:${APP_GID} frontend-foundation/src/navigation/visit-tracker.js /app/static/visit-tracker.js
@@ -23,6 +24,7 @@ ENV PYTHONPATH=/app \
     SAMPLE_INTERVAL_SECONDS=60 \
     RETENTION_DAYS=31
 ENV WEB_NAVIGATION_CATALOG_FILE=/app/catalog.json WEB_CLIENTS_FILE=/clients/clients.txt
+ENV WEB_CLIENT_DETAILS_FILE=/clients/client-details.csv WEB_CLIENT_DETAILS_SEED=/app/config/client-details.csv
 
 EXPOSE 8091
 EXPOSE 8093/udp

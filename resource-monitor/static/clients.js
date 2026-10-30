@@ -1,3 +1,5 @@
+import { ClientIdentificationPanel, openClientInventory, validIdentification } from './client-identification.js';
+
 function element(tag, text, className) {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
@@ -46,6 +48,9 @@ export class ClientsView {
     this.network.addEventListener('change', () => this.render());
     this.landing.addEventListener('change', () => this.render());
     root.querySelector('[data-clients-refresh]').addEventListener('click', () => void this.load());
+    root.querySelector('[data-clients-inventory]').addEventListener('click', () => {
+      void openClientInventory((ip, identification) => this.identificationSaved(ip, identification));
+    });
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && this.active) void this.load();
     });
@@ -72,10 +77,11 @@ export class ClientsView {
     const timeout = setTimeout(() => controller.abort(), 7000);
     try {
       const response = await fetch('api/clients', { cache: 'no-store', signal: controller.signal });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
       if (data.version !== 1 || !Array.isArray(data.clients) || typeof data.connection_monitor?.available !== 'boolean'
           || data.clients.some(client => typeof client.ip !== 'string' || typeof client.alias !== 'string'
+            || (client.identification !== null && !validIdentification(client.identification, client.ip))
             || !['Internet', 'LAN / privada'].includes(client.network) || typeof client.landing_seen !== 'boolean'
             || !['open', 'closed', 'unknown'].includes(client.connection_state)
             || !Array.isArray(client.navigation) || !Array.isArray(client.connections)))
@@ -133,7 +139,9 @@ export class ClientsView {
         this.list.append(card);
         this.renderClient(card, client);
       }
-      card.hidden = !((!search || `${client.ip} ${client.alias} ${client.hostname || ''}`.toLocaleLowerCase('es').includes(search))
+      const identity = client.identification;
+      const editing = this.editing === client.ip || !!this.content.get(card)?.identification.form;
+      card.hidden = !editing && !((!search || `${client.ip} ${client.alias} ${client.hostname || ''} ${identity?.dns_name || ''} ${identity?.entity || ''} ${identity?.asn || ''} ${identity?.description || ''}`.toLocaleLowerCase('es').includes(search))
         && (!this.filter.value || this.filter.value === client.connection_state)
         && (!this.network.value || this.network.value === client.network)
         && (!this.landing.value || client.landing_seen === (this.landing.value === 'visited')));
@@ -177,6 +185,10 @@ export class ClientsView {
     error.setAttribute('role', 'alert');
     error.hidden = true;
     card.append(headingScroll, secondary, error);
+    const identity = element('section', undefined, 'client-identification');
+    const identification = new ClientIdentificationPanel(identity,
+      (ip, value) => this.identificationSaved(ip, value));
+    card.append(identity);
     const details = element('div', undefined, 'client-details');
     const navigation = this.section('Navegación conocida');
     const tree = element('ul', undefined, 'client-tree');
@@ -192,16 +204,26 @@ export class ClientsView {
     current.append(connections);
     details.append(current);
     card.append(details);
-    this.content.set(card, { alias, aliasArea, aliasDisplay, secondary, landingStatus, products, connections, edit, error });
+    this.content.set(card, { alias, aliasArea, aliasDisplay, secondary, landingStatus, products, connections, edit, error, identification });
+  }
+
+  identificationSaved(ip, identification) {
+    const row = this.rows.find(client => client.ip === ip);
+    if (row) row.identification = identification;
+    this.render();
   }
 
   updateClient(card, client) {
     const view = this.content.get(card);
     text(view.alias, client.alias || '—');
     view.alias.title = client.alias || 'Sin alias';
-    text(view.secondary, `${client.hostname || 'Sin nombre DNS'} · ${client.network}`);
+    const identity = client.identification;
+    const name = identity ? identity.dns_name || 'Sin nombre DNS documentado' : client.hostname || 'Sin nombre DNS';
+    const origin = identity ? `CSV · ${identity.reviewed_on || 'sin fecha'}` : 'DNS automático';
+    text(view.secondary, `${name} · ${client.network} · ${origin}`);
     view.secondary.title = view.secondary.textContent;
     view.edit.disabled = !!this.editing && this.editing !== client.ip;
+    view.identification.update(client.ip, identity);
     this.status(card, client.connection_state, client.open_count);
     text(view.landingStatus, client.landing_seen ? '✓ Landing visitado' : '○ Sin visita al landing registrada');
     view.products.hidden = !client.navigation.length;

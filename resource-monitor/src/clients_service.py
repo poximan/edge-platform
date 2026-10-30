@@ -12,9 +12,10 @@ from navigation_catalog import normalize_ip
 
 
 class ClientsService:
-    def __init__(self, store, catalog, observer_url, key, interval=2, monotonic=time.monotonic):
+    def __init__(self, store, catalog, observer_url, key, details_store, interval=2, monotonic=time.monotonic):
         self.store, self.catalog = store, catalog
         self.observer_url, self.key, self.interval = observer_url, key, interval
+        self.details_store = details_store
         self.monotonic = monotonic
         self.stop_event = threading.Event()
         self.lock = threading.Lock()
@@ -102,6 +103,7 @@ class ClientsService:
 
     def snapshot(self):
         clients = self.store.snapshot()
+        identifications = self.details_store.snapshot()
         with self.lock:
             available = self.error is None and self.updated is not None and self.monotonic() - self.updated < self.interval * 3 + 2
             connections = list(self.connections or []) if available else []
@@ -109,7 +111,7 @@ class ClientsService:
         rows = []
         for ip, client in clients.items():
             with self.lock:
-                if not client['hostname'] and ip not in self.dns_requested:
+                if not client['hostname'] and ip not in identifications and ip not in self.dns_requested:
                     try:
                         self.dns.put_nowait(ip)
                         self.dns_requested.add(ip)
@@ -122,6 +124,7 @@ class ClientsService:
                 navigation.append({**visit, 'id': identifier, 'label': product['label'],
                                    'pages': [{'id': name, 'label': product['pages'][name]} for name in visit['pages']]})
             rows.append({'ip': ip, 'alias': client['alias'], 'hostname': client['hostname'],
+                         'identification': identifications.get(ip),
                          'network': 'Internet' if ipaddress.ip_address(ip).is_global else 'LAN / privada',
                          'landing_seen': client['landing_seen'], 'navigation': navigation,
                          'connections': active, 'open_count': len(active) if available else None,

@@ -84,11 +84,13 @@
       <section id="clients-panel" class="metrics-panel" role="tabpanel" aria-labelledby="clients-tab" hidden>
         <header class="page-header"><div><h2>Clientes</h2><p>Una IP agrupa sus navegadores y conexiones. Se conserva su navegación conocida después del cierre.</p></div></header>
         <div class="clients-controls">
-          <label>Buscar cliente<input type="search" data-clients-search placeholder="Alias, IP o nombre DNS" aria-label="Buscar cliente"></label>
+          <label>Buscar cliente<input type="search" data-clients-search placeholder="Alias, IP, DNS, entidad o ASN" aria-label="Buscar cliente"></label>
           <label>Conexión<select data-clients-state><option value="">Todos</option><option value="open">Con conexión abierta</option><option value="closed">Sin conexiones abiertas</option><option value="unknown">Medición no disponible</option></select></label>
           <label>Origen<select data-clients-network><option value="">Todos</option><option value="Internet">Internet</option><option value="LAN / privada">LAN / privada</option></select></label>
           <label>Landing<select data-clients-landing><option value="">Todos</option><option value="visited">Visitó el landing</option><option value="not_visited">Sin visita registrada</option></select></label>
           <button type="button" data-clients-refresh>Actualizar</button>
+          <button type="button" data-clients-inventory>Inventario CSV</button>
+          <a class="clients-csv-download" href="api/clients/identification.csv" download="client-details.csv">Descargar CSV</a>
         </div>
         <p data-clients-notice class="client-notice" role="alert"></p>
         <p id="clients-count" data-clients-count role="status">Consultando clientes…</p>
